@@ -73,7 +73,7 @@ int app_isr(float iu, float iw, float vdc, float duty[3])
     return app.m.pwm_en;
 }
 
-void app_stop_key(void) { app.key_run = 0; app.stop_latch = 1; }
+void app_stop_key(void) { app.key_run = 0; app.tw_run = 0; app.stop_latch = 1; app.restart_tmr = 0; app.sleeping = 0; }
 
 static void log_fault(uint8_t f)
 {
@@ -87,7 +87,7 @@ static uint16_t status_reg(int i)
     switch (i) {
     case ST_WORD: return (uint16_t)((app.ready && m->state != VFD_ST_FAULT ? 1 : 0) | (m->pwm_en ? 2 : 0) | (m->f_out < 0 ? 4 : 0) |
                          (m->state == VFD_ST_FAULT ? 8 : 0) | ((m->state == VFD_ST_RUN && fabsf(m->f_ramp - app.f_ref) < 0.05f) ? 16 : 0) |
-                         (m->limiting ? 32 : 0) | (m->state == VFD_ST_TUNE ? 64 : 0));
+                         (m->limiting ? 32 : 0) | (m->state == VFD_ST_TUNE ? 64 : 0) | (app.sleeping ? 128 : 0));
     case ST_FAULT:   return m->fault;
     case ST_F_OUT:   return (uint16_t)(int16_t)lroundf(m->f_out * 100);
     case ST_F_REF:   return (uint16_t)(int16_t)lroundf(app.f_ref * 100);
@@ -105,6 +105,8 @@ static uint16_t status_reg(int i)
     case ST_HOURS:   return (uint16_t)(app.run_seconds / 3600);
     case ST_VERSION: return FW_VERSION;
     case ST_STATE:   return (uint16_t)m->state;
+    case ST_PID_SP:  return (uint16_t)lroundf(app.pid_sp * 10);
+    case ST_PID_FB:  return (uint16_t)lroundf(app.pid_fb * 10);
     }
     return 0;
 }
@@ -128,7 +130,7 @@ int mb_reg_write(uint16_t addr, uint16_t val)
         return 0;
     }
     if (addr == REG_CTRL) {
-        if ((val & 4) && !(app.ctrl_word & 4)) { hw_ipm_fault_clear(); vfd_reset_fault(&app.m); }
+        if ((val & 4) && !(app.ctrl_word & 4)) { hw_ipm_fault_clear(); vfd_reset_fault(&app.m); app.restart_tmr = 0; }
         app.ctrl_word = val; return 0;
     }
     if (addr == REG_FREQ_REF) { app.mb_freq = (int16_t)val; return 0; }
@@ -149,13 +151,54 @@ static void modbus_poll(void)
 }
 
 /* ---------------- логика 10 мс ---------------- */
+static float clampf(float x, float lo, float hi) { return x < lo ? lo : (x > hi ? hi : x); }
+
+/* ПИД-регулятор процесса: обратная связь — аналоговый вход, выход — частота. Возвращает частоту, Гц */
+static float pid_step(int running, float fmax)
+{
+    float kp = params_get_f(P_PID_KP), ti = params_get_f(P_PID_TI), td = params_get_f(P_PID_TD);
+    float fmin = params_get_f(P_PID_FMIN), sleep_f = params_get_f(P_SLEEP_F);
+    static uint32_t sleep_cnt;
+    app.pid_sp = (param_val[P_REF_SRC] == 2) ? (float)app.mb_freq * 0.01f : params_get_f(P_PID_SET);
+    app.pid_fb = app.ai * 100.0f;
+    float e = app.pid_sp - app.pid_fb;
+    if (param_val[P_PID_MODE] == 2) e = -e;
+    if (kp < 0.01f) kp = 0.01f;
+    float imax = 100.0f / kp;
+    if (fmin > fmax) fmin = fmax;
+    if (!running) {                                  /* безударный пуск: выход равен минимальной частоте */
+        app.pid_i = fmin / fmax * imax; app.pid_d = 0; app.pid_prev = e; sleep_cnt = 0;
+    } else {
+        if (ti > 0.05f) app.pid_i = clampf(app.pid_i + e * 0.01f / ti, 0.0f, imax); else app.pid_i = 0;
+        app.pid_d += 0.2f * ((e - app.pid_prev) * 100.0f - app.pid_d);
+        app.pid_prev = e;
+    }
+    float out = clampf(kp * (e + app.pid_i + td * app.pid_d), 0.0f, 100.0f);
+    float f = clampf(out * 0.01f * fmax, fmin, fmax);
+    if (sleep_f > 0) {                               /* «сон»: при малом расходе двигатель останавливается */
+        if (!app.sleeping) {
+            if (running && f <= sleep_f) { if (++sleep_cnt > (uint32_t)param_val[P_SLEEP_T] * 100u) app.sleeping = 1; }
+            else sleep_cnt = 0;
+        } else if (e > params_get_f(P_WAKE)) { app.sleeping = 0; sleep_cnt = 0; }
+    } else app.sleeping = 0;
+    return f;
+}
+
 static void logic_10ms(void)
 {
-    static uint16_t pre_cnt, sec_cnt;
-    static uint8_t di_prev, last_state = VFD_ST_STOP;
+    static uint16_t pre_cnt, sec_cnt, ul_cnt;
+    static uint32_t ok_cnt;
+    static uint8_t di_prev, last_state = VFD_ST_STOP, save_div;
     vfd_t *m = &app.m;
     uint32_t now = hw_millis();
-    app.temp = hw_temp(); app.ai = hw_ai(); app.di = hw_di();
+    app.temp = hw_temp(); app.di = hw_di();
+    int di3 = (app.di & DI_3) != 0, fn = param_val[P_DI3_FUNC];
+
+    /* аналоговый вход: масштабирование и фильтр */
+    float lo = params_get_f(P_AI_MIN) * 0.01f, hi = params_get_f(P_AI_MAX) * 0.01f;
+    if (hi < lo + 0.01f) hi = lo + 0.01f;
+    float sc = clampf((hw_ai() - lo) / (hi - lo), 0.0f, 1.0f);
+    app.ai += (param_val[P_AI_FILT] > 10 ? 10.0f / (float)param_val[P_AI_FILT] : 1.0f) * (sc - app.ai);
 
     /* предзаряд: реле шунтирует резистор через 1 с после установления напряжения шины */
     float uv = params_get_f(P_UV);
@@ -167,41 +210,83 @@ static void logic_10ms(void)
     if (hw_ipm_fault()) vfd_trip(m, VFD_F_OC_HW);
     if (hw_sensor_fault()) vfd_trip(m, VFD_F_SENSOR);
     if (app.temp > params_get_f(P_OH) || app.temp < -40.0f) vfd_trip(m, VFD_F_OH);
-    if (param_val[P_DI3_FUNC] == 2 && (app.di & DI_3)) vfd_trip(m, VFD_F_EXT);
-    if (param_val[P_DI3_FUNC] == 1 && (app.di & DI_3) && !(di_prev & DI_3)) { hw_ipm_fault_clear(); vfd_reset_fault(m); }
-    di_prev = app.di;
+    if (fn == 2 && di3) vfd_trip(m, VFD_F_EXT);
+    if (fn == 1 && di3 && !(di_prev & DI_3)) { hw_ipm_fault_clear(); vfd_reset_fault(m); app.restart_tmr = 0; }
     int mb_ctl = (param_val[P_CMD_SRC] == 2 || param_val[P_REF_SRC] == 2);
     if (mb_ctl && param_val[P_MB_TIMEOUT] > 0 && m->pwm_en && (now - app.last_comm_ms) > (uint32_t)param_val[P_MB_TIMEOUT] * 100u)
         vfd_trip(m, VFD_F_COMM);
     vfd_slow(m, 0.01f, params_get_f(P_OL_TIME));
-    if (m->state == VFD_ST_FAULT && last_state != VFD_ST_FAULT) { log_fault(m->fault); app.key_run = 0; app.stop_latch = 1; app.ctrl_word &= (uint16_t)~1u; }
+    /* недогрузка: ток ниже порога при работе на установившейся частоте (сухой ход насоса, обрыв ремня) */
+    if (param_val[P_UL_CUR] > 0 && m->state == VFD_ST_RUN && fabsf(m->f_ramp) > 5.0f && fabsf(m->f_ramp - app.f_ref) < 0.05f &&
+        m->i_rms < params_get_f(P_UL_CUR) * 0.01f * m->c.i_rated) {
+        if (++ul_cnt > (uint16_t)param_val[P_UL_TIME] * 100u) vfd_trip(m, VFD_F_UL);
+    } else ul_cnt = 0;
+
+    if (m->state == VFD_ST_FAULT && last_state != VFD_ST_FAULT) {
+        uint8_t f = m->fault;
+        log_fault(f);
+        int auto_ok = param_val[P_RESTART_N] > 0 && app.restart_cnt < param_val[P_RESTART_N] &&
+                      f != VFD_F_OC_HW && f != VFD_F_TUNE && f != VFD_F_SENSOR && f != VFD_F_EXT && f != VFD_F_PRECH;
+        if (auto_ok) app.restart_tmr = (uint16_t)(param_val[P_RESTART_T] * 100);
+        else { app.restart_tmr = 0; app.key_run = 0; app.tw_run = 0; app.stop_latch = 1; app.ctrl_word &= (uint16_t)~1u; }
+    }
+    if (m->state == VFD_ST_FAULT && app.restart_tmr && --app.restart_tmr == 0) {      /* автосброс */
+        app.restart_cnt++; hw_ipm_fault_clear(); vfd_reset_fault(m);
+    }
+    if (m->state == VFD_ST_RUN) { if (++ok_cnt > 60000u) app.restart_cnt = 0; } else ok_cnt = 0;   /* 10 минут без аварий */
     last_state = (uint8_t)m->state;
 
-    /* источник команд */
-    int run = 0, rev = 0;
+    /* ---- источник команд ---- */
+    int run = 0, rev = 0, fwd_in = (app.di & DI_FWD) != 0, rev_in = (app.di & DI_REV) != 0;
     switch (param_val[P_CMD_SRC]) {
     case 0: run = app.key_run; break;
-    case 1: run = ((app.di & DI_FWD) != 0) ^ ((app.di & DI_REV) != 0); rev = (app.di & DI_REV) != 0; break;
+    case 1:
+        switch (param_val[P_TERM_MODE]) {
+        case 0: run = fwd_in ^ rev_in; rev = rev_in; break;           /* DI1 — вперёд, DI2 — назад */
+        case 1: run = fwd_in; rev = rev_in; break;                    /* DI1 — пуск, DI2 — направление */
+        default:                                                      /* 3-проводный: DI1 — кнопка ПУСК (НО), DI2 — кнопка СТОП (НЗ) */
+            if (!rev_in) app.tw_run = 0;
+            else if (fwd_in && !(di_prev & DI_FWD)) app.tw_run = 1;
+            run = app.tw_run; break;
+        }
+        break;
     default: run = app.ctrl_word & 1; rev = (app.ctrl_word & 2) != 0; break;
     }
+    di_prev = app.di;
+    if (fn == 4 && di3) rev = !rev;
+    int jog = (fn == 5 && di3 && !run);
+    if (jog) run = 1;
+    m->coast_req = (uint8_t)(fn == 8 && di3);
+    if (m->coast_req) { run = 0; app.tw_run = 0; }
     if (!run) app.stop_latch = 0;                 /* блокировка снимается только после снятия команды пуска */
     if (run && !app.ready && !app.stop_latch && now > 5000 && m->state != VFD_ST_FAULT) vfd_trip(m, VFD_F_PRECH);
-    /* источник задания */
+
+    /* ---- источник задания ---- */
     float fmax = params_get_f(P_F_MAX), fmin = params_get_f(P_F_MIN), f;
-    switch (param_val[P_REF_SRC]) {
-    case 0: f = params_get_f(P_FREQ_SET); break;
-    case 1: f = app.ai * fmax; break;
-    default: f = (float)app.mb_freq * 0.01f; break;
+    app.pid_on = (uint8_t)(param_val[P_PID_MODE] != 0 && !(fn == 7 && di3) && !jog);
+    if (app.pid_on) f = pid_step(m->state == VFD_ST_RUN && run, fmax);
+    else {
+        app.sleeping = 0;
+        switch (param_val[P_REF_SRC]) {
+        case 0: f = params_get_f(P_FREQ_SET); break;
+        case 1: f = app.ai * fmax; break;
+        default: f = (float)app.mb_freq * 0.01f; break;
+        }
+        if (fn == 3 && di3) f = params_get_f(P_F_FIXED);
+        if (jog) f = params_get_f(P_F_JOG);
     }
-    if (param_val[P_DI3_FUNC] == 3 && (app.di & DI_3)) f = params_get_f(P_F_FIXED);
     if (rev) f = -f;
     if (f < 0 && !param_val[P_REV_EN]) f = 0;
     float fa = fabsf(f); if (fa > fmax) fa = fmax; if (fa < fmin) fa = fmin;
+    float sk = params_get_f(P_SKIP_F), hb = params_get_f(P_SKIP_BAND) * 0.5f;      /* пропуск резонансной частоты */
+    if (sk > 0 && hb > 0 && fabsf(fa - sk) < hb) fa = fa < sk ? sk - hb : sk + hb;
     app.f_ref = f < 0 ? -fa : fa;
     m->f_target = app.f_ref;
+    if (fn == 6 && di3) vfd_set_ramp(m, params_get_f(P_ACC2), params_get_f(P_DEC2));
+    else vfd_set_ramp(m, params_get_f(P_ACC), params_get_f(P_DEC));
 
     int tune = param_val[P_TUNE] != 0;
-    int allow = app.ready && !app.stop_latch && m->state != VFD_ST_FAULT;
+    int allow = app.ready && !app.stop_latch && m->state != VFD_ST_FAULT && !app.sleeping;
     if (allow && run && !m->pwm_en) {
         if (app.cfg_dirty) apply_cfg();
         if (!tune && param_val[P_MODE] == VFD_MODE_SVC && !params_motor_valid()) { vfd_trip(m, VFD_F_TUNE); allow = 0; }
@@ -210,23 +295,24 @@ static void logic_10ms(void)
     m->run_cmd = (uint8_t)(allow && run);
     if (m->tune_done) {                           /* автонастройка завершена: записать параметры, снять команду */
         m->tune_done = 0; params_from_tune(&m->tune);
-        app.key_run = 0; app.stop_latch = 1; app.ctrl_word &= (uint16_t)~1u; app.cfg_dirty = 1; app.save_req = 1;
+        app.key_run = 0; app.tw_run = 0; app.stop_latch = 1; app.ctrl_word &= (uint16_t)~1u; app.cfg_dirty = 1; app.save_req = 1;
     }
     if (app.cfg_dirty && !m->pwm_en && m->state != VFD_ST_BOOT) apply_cfg();
 
     /* вентилятор, реле */
-    hw_fan(m->pwm_en || app.temp > 45.0f);
+    hw_fan(param_val[P_FAN_MODE] || m->pwm_en || app.temp > 45.0f);
     int rl;
     switch (param_val[P_RELAY_FUNC]) {
     case 0: rl = m->state == VFD_ST_FAULT; break;
     case 1: rl = m->pwm_en; break;
     case 2: rl = app.ready && m->state != VFD_ST_FAULT; break;
-    default: rl = m->state == VFD_ST_RUN && fabsf(m->f_ramp - app.f_ref) < 0.05f; break;
+    case 3: rl = m->state == VFD_ST_RUN && fabsf(m->f_ramp - app.f_ref) < 0.05f; break;
+    case 4: rl = m->limiting; break;
+    default: rl = app.sleeping; break;
     }
     hw_relay(rl);
 
     if (m->pwm_en && ++sec_cnt >= 100) { sec_cnt = 0; app.run_seconds++; if (app.run_seconds % 3600 == 0) app.save_req = 1; }
-    static uint8_t save_div;
     if (app.save_req && ++save_div >= 20) { save_div = 0; app.save_req = 0; store_save(); }
 }
 
@@ -241,8 +327,8 @@ void app_loop(void)
 
 static const char *const flt_ru[VFD_F_COUNT] = {
     "", "КЗ / СВЕРХТОК МОДУЛЯ", "ПЕРЕГРУЗКА ПО ТОКУ", "ПЕРЕНАПРЯЖЕНИЕ ШИНЫ", "НИЗКОЕ НАПРЯЖЕНИЕ", "ПЕРЕГРУЗКА ДВИГАТЕЛЯ",
-    "ПЕРЕГРЕВ РАДИАТОРА", "НЕТ СВЯЗИ MODBUS", "ОШИБКА АВТОНАСТРОЙКИ", "ВНЕШНЯЯ АВАРИЯ", "НЕТ ЗАРЯДА ШИНЫ", "ДАТЧИКИ ТОКА" };
+    "ПЕРЕГРЕВ РАДИАТОРА", "НЕТ СВЯЗИ MODBUS", "ОШИБКА АВТОНАСТРОЙКИ", "ВНЕШНЯЯ АВАРИЯ", "НЕТ ЗАРЯДА ШИНЫ", "ДАТЧИКИ ТОКА", "НЕДОГРУЗКА / СУХ.ХОД" };
 static const char *const flt_en[VFD_F_COUNT] = {
     "", "IPM SHORT/OVERCURR.", "OVERCURRENT", "DC BUS OVERVOLTAGE", "DC BUS UNDERVOLTAGE", "MOTOR OVERLOAD",
-    "HEATSINK OVERTEMP.", "MODBUS COMM LOST", "AUTOTUNE FAILED", "EXTERNAL FAULT", "DC BUS NOT CHARGED", "CURRENT SENSORS" };
+    "HEATSINK OVERTEMP.", "MODBUS COMM LOST", "AUTOTUNE FAILED", "EXTERNAL FAULT", "DC BUS NOT CHARGED", "CURRENT SENSORS", "UNDERLOAD / DRY RUN" };
 const char *fault_text(int code, int en) { if (code < 0 || code >= VFD_F_COUNT) code = 0; return en ? flt_en[code] : flt_ru[code]; }

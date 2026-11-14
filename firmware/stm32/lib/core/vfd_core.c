@@ -43,7 +43,7 @@ static void enter(vfd_t *m, vfd_state_t s) { m->state = s; m->t_state = 0; }
 
 static void reset_ctrl(vfd_t *m)
 {
-    m->f_ramp = 0; m->theta = 0; m->i_int = 0;
+    m->f_ramp = 0; m->ramp_rate = 0; m->theta = 0; m->i_int = 0;
     m->psis_a = m->psis_b = 0; m->psir = 0; m->th_pll = 0; m->w_pll = 0; m->we_f = 0; m->wr_est = 0;
     m->int_d = m->int_q = m->int_spd = 0; m->id_ref = m->iq_ref = 0; m->low_mode = 1; m->fw = 1; m->iq_f = 0;
     m->va_prev = m->vb_prev = 0;
@@ -68,25 +68,35 @@ static void svpwm(vfd_t *m, float va, float vb, float vdc, float iu, float iv, f
     duty[2] = clampf(c + off + dt * clampf(iw / ith, -1, 1), 0, 1);
 }
 
-/* --- задатчик интенсивности с приостановкой по току и напряжению шины --- */
+/* --- задатчик интенсивности: ограничение темпа, S-скругление, приостановка по току и напряжению шины --- */
 static void ramp(vfd_t *m, float vdc)
 {
     const vfd_cfg_t *c = &m->c;
     float tgt = m->run_cmd ? m->f_target : 0.0f;
-    float up = c->f_rated / (c->acc_time > 0.05f ? c->acc_time : 0.05f) * c->ts;
-    float dn = c->f_rated / (c->dec_time > 0.05f ? c->dec_time : 0.05f) * c->ts;
+    float ta = c->acc_time > 0.05f ? c->acc_time : 0.05f, td = c->dec_time > 0.05f ? c->dec_time : 0.05f;
     float f = m->f_ramp, d = tgt - f;
     int accel = (fabsf(tgt) > fabsf(f)) && (tgt * f >= 0);
+    float t = accel ? ta : td, amax = c->f_rated / t;
     m->limiting = 0;
     if (accel) {
-        if (c->mode == VFD_MODE_VF && m->i_rms > c->i_limit) { m->limiting = 1; return; }
-        f += clampf(d, -up, up);
+        if (c->mode == VFD_MODE_VF && m->i_rms > c->i_limit) { m->limiting = 1; m->ramp_rate = 0; return; }
+    } else if (c->ov_stall > 0 && vdc > c->ov_stall) { m->limiting = 1; m->ramp_rate = 0; return; }
+    if (c->scurve <= 0.001f) {
+        float st = clampf(d, -amax * c->ts, amax * c->ts);
+        f += st; m->ramp_rate = st / c->ts;
     } else {
-        if (c->ov_stall > 0 && vdc > c->ov_stall) { m->limiting = 1; return; }
-        f += clampf(d, -dn, dn);
+        /* ограничение рывка: темп не выше sqrt(2*J*|d|), чтобы плавно прийти к заданию без перерегулирования */
+        float j = amax / (c->scurve * t), ad = fabsf(d);
+        float v = sqrtf(2.0f * j * ad); if (v > amax) v = amax;
+        v *= sgnf(d);
+        m->ramp_rate += clampf(v - m->ramp_rate, -j * c->ts, j * c->ts);
+        float st = m->ramp_rate * c->ts;
+        if (fabsf(st) >= ad || ad < 0.002f) { f = tgt; m->ramp_rate = 0; } else f += st;
     }
     m->f_ramp = f;
 }
+
+void vfd_set_ramp(vfd_t *m, float acc_time, float dec_time) { m->c.acc_time = acc_time; m->c.dec_time = dec_time; }
 
 /* --- интегральный регулятор постоянного тока по оси alpha (не требует параметров двигателя) --- */
 static float dc_ctrl(vfd_t *m, float i_ref)
@@ -109,7 +119,8 @@ static void run_vf(vfd_t *m, float *va, float *vb)
     m->torque += 0.002f * (iact / irat - m->torque);
     float fs = f + sgnf(f) * c->slip_comp * c->f_slip_rated * clampf(m->torque, -1.5f, 1.5f);
     float fa = fabsf(fs);
-    float vll = fa >= c->f_rated ? c->v_rated : c->boost_v + (c->v_rated - c->boost_v) * fa / c->f_rated;
+    float k = fa / c->f_rated; if (c->vf_quad) k *= k;
+    float vll = fa >= c->f_rated ? c->v_rated : c->boost_v + (c->v_rated - c->boost_v) * k;
     float amp = vll * (SQRT2 / SQRT3);
     m->theta = wrap_pi(m->theta + TWO_PI * fs * c->ts);
     *va = amp * cosf(m->theta); *vb = amp * sinf(m->theta);
@@ -310,8 +321,8 @@ void vfd_step(vfd_t *m, float iu, float iw, float vdc, float duty[3])
         if (m->t_state > clampf(tmag, 0.1f, 1.0f)) enter(m, VFD_ST_RUN);
         break; }
     case VFD_ST_RUN:
-        if (!m->run_cmd && (c->stop_coast || fabsf(m->f_ramp) < F_STOP)) {
-            if (!c->stop_coast && c->dcb_time > 0) { m->i_int = 0; enter(m, VFD_ST_DCBRAKE); }
+        if (!m->run_cmd && (c->stop_coast || m->coast_req || fabsf(m->f_ramp) < F_STOP)) {
+            if (!c->stop_coast && !m->coast_req && c->dcb_time > 0) { m->i_int = 0; enter(m, VFD_ST_DCBRAKE); }
             else { m->pwm_en = 0; enter(m, VFD_ST_STOP); }
             return;
         }

@@ -86,7 +86,7 @@ int main(void)
         check_screen("авария", "АВАРИЯ", fault_text(f, 0), "STOP = СБРОС");
     }
     const char *st[] = {"ЗАРЯД", "ГОТОВ", "НАСТР.", "ТОРМОЗ", "РАБОТА"};
-    for (int i = 0; i < 5; i++) check_screen("главный экран", st[i], "ЗАД.", 0);
+    for (int i = 0; i < 5; i++) check_screen("главный экран", st[i], "ЗАД.", "СОН");
     FILE *g = fopen("glyphs.txt", "w");
     for (int i = 0; i < 32; i++) { const uint8_t *p = lcd_glyph(i); int any = 0; for (int r = 0; r < 7; r++) any |= p[r];
         if (!any) continue; fprintf(g, "U+%04X\n", 0x410 + i);
@@ -144,7 +144,53 @@ int main(void)
     press(KEY_STOP); wr(P_ACC, 77); wr(REG_SAVE, 1); run_ms(400);
     app_init();
     CHECK(param_val[P_ACC] == 77 && app.faults[0] == VFD_F_TUNE, "сохранение/загрузка параметров и журнала");
-    vdc = 150; run_ms(3000); CHECK(!app.ready || 1, "-");
+    printf("== новые функции ==\n");
+    flash_ok = 0; app_init(); run_ms(1500);
+    /* клеммы, режим «пуск/реверс» */
+    wr(P_CMD_SRC, 1); wr(P_TERM_MODE, 1); wr(P_ACC, 10); wr(P_DEC, 10); di = DI_FWD | DI_REV; run_ms(1500);
+    CHECK(fabsf(app.m.f_out + 50) < 0.1f, "клеммы пуск/реверс: %.1f Гц", app.m.f_out);
+    di = 0; run_ms(1500); CHECK(app.m.state == VFD_ST_STOP, "останов");
+    /* 3-проводный режим */
+    wr(P_TERM_MODE, 2); di = DI_REV; run_ms(50); di = DI_REV | DI_FWD; run_ms(50); di = DI_REV; run_ms(1500);
+    CHECK(app.m.pwm_en && fabsf(app.m.f_out - 50) < 0.1f, "3-проводный: пуск импульсом, %.1f Гц", app.m.f_out);
+    di = 0; run_ms(50); di = DI_REV; run_ms(1500);
+    CHECK(app.m.state == VFD_ST_STOP, "3-проводный: стоп размыканием DI2 без самозапуска");
+    /* толчок и вторая рампа, выбег */
+    wr(P_DI3_FUNC, 5); di = DI_REV | DI_3; run_ms(600);
+    CHECK(app.m.pwm_en && fabsf(app.m.f_out - 5) < 0.1f, "толчок: %.1f Гц", app.m.f_out);
+    di = DI_REV; run_ms(600); CHECK(!app.m.pwm_en, "толчок снят");
+    wr(P_DI3_FUNC, 8); di = DI_REV | DI_FWD; run_ms(50); di = DI_REV; run_ms(1200); di = DI_REV | DI_3; run_ms(30);
+    CHECK(!app.m.pwm_en, "останов выбегом по DI3"); di = 0; run_ms(50);
+    /* пропуск частоты, S-рампа */
+    wr(P_CMD_SRC, 0); wr(P_DI3_FUNC, 0); wr(P_SKIP_F, 250); wr(P_SKIP_BAND, 40); wr(P_FREQ_SET, 240); run_ms(30);
+    CHECK(fabsf(app.f_ref - 23) < 0.01f, "пропуск частоты: задание %.1f", app.f_ref);
+    wr(P_SKIP_F, 0); wr(P_FREQ_SET, 500); wr(P_SCURVE, 30); wr(P_ACC, 20); press(KEY_RUN);
+    float fmx = 0, f1 = 0; for (int i = 0; i < 40; i++) { run_ms(100); if (app.m.f_out > fmx) fmx = app.m.f_out; if (i == 2) f1 = app.m.f_out; }
+    CHECK(fabsf(app.m.f_out - 50) < 0.05f && fmx < 50.05f && f1 < 3.0f, "S-рампа: итог %.2f, максимум %.2f, через 0,3 с %.2f Гц", app.m.f_out, fmx, f1);
+    press(KEY_STOP); run_ms(2500); wr(P_SCURVE, 0);
+    /* ПИД: модель — давление пропорционально частоте с инерцией; затем «сон» */
+    wr(P_PID_MODE, 1); wr(P_PID_SET, 600); wr(P_PID_KP, 100); wr(P_PID_TI, 20); wr(P_PID_FMIN, 100); wr(P_AI_FILT, 0); wr(P_ACC, 10);
+    run_ms(50); press(KEY_RUN);
+    for (int i = 0; i < 3000; i++) { ai += 0.01f * (fabsf(app.m.f_out) / 50.0f * 0.9f - ai); run_ms(10); }
+    CHECK(fabsf(app.pid_fb - 60) < 1.5f, "ПИД: обратная связь %.1f %% при задании 60 %%, частота %.1f Гц", app.pid_fb, app.m.f_out);
+    wr(P_SLEEP_F, 150); wr(P_SLEEP_T, 2); wr(P_WAKE, 50);
+    for (int i = 0; i < 600; i++) { ai += 0.02f * (0.8f - ai); run_ms(10); }     /* расход упал: давление держится само */
+    CHECK(app.sleeping && !app.m.pwm_en, "ПИД: переход в сон (sleeping=%d)", app.sleeping);
+    for (int i = 0; i < 300; i++) { ai += 0.02f * (0.4f - ai); run_ms(10); }
+    CHECK(!app.sleeping && app.m.pwm_en, "ПИД: пробуждение при падении давления");
+    press(KEY_STOP); run_ms(1500); wr(P_PID_MODE, 0); wr(P_SLEEP_F, 0); ai = 0;
+    /* недогрузка и автосброс */
+    wr(P_UL_CUR, 30); wr(P_UL_TIME, 1); wr(P_RESTART_N, 1); wr(P_RESTART_T, 1); wr(P_ACC, 5); press(KEY_RUN); run_ms(2200);
+    CHECK(app.m.fault == VFD_F_UL, "недогрузка: авария %d", app.m.fault);
+    run_ms(1200);
+    CHECK(app.m.state == VFD_ST_RUN, "автосброс: привод снова в работе (состояние %d)", app.m.state);
+    run_ms(2500);
+    CHECK(app.m.state == VFD_ST_FAULT, "автосброс: число попыток исчерпано");
+    press(KEY_STOP); run_ms(100); wr(P_UL_CUR, 0);
+    /* защита параметров */
+    wr(P_LOCK, 1); keys = KEY_ENTER; run_ms(30); keys = 0; run_ms(30); keys = KEY_ENTER; run_ms(30); keys = 0; run_ms(30);
+    keys = KEY_UP; run_ms(30); keys = 0; run_ms(30); keys = KEY_ENTER; run_ms(30); keys = 0; run_ms(30);
+    CHECK(param_val[P_CMD_SRC] == 0 && param_val[P_REF_SRC] == 0, "защита параметров от изменения с пульта");
 
     printf(fails ? "ИТОГ: ОШИБОК %d\n" : "ИТОГ: все проверки пройдены\n", fails);
     return fails ? 1 : 0;

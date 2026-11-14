@@ -335,7 +335,7 @@ void hw_init(void)
     TIM1->CCMR2 = (6u << TIM_CCMR2_OC3M_Pos) | TIM_CCMR2_OC3PE;
     TIM1->CCER = TIM_CCER_CC1E | TIM_CCER_CC1NE | TIM_CCER_CC2E | TIM_CCER_CC2NE | TIM_CCER_CC3E | TIM_CCER_CC3NE;
     TIM1->CR2 = TIM_CR2_MMS_1;                                          /* TRGO = обновление -> запуск АЦП */
-    TIM1->BDTR = TIM_BDTR_BKE | TIM_BDTR_OSSI | TIM_BDTR_OSSR | dtg_code(192);   /* BKP = 0: активный низкий уровень */
+    TIM1->BDTR = TIM_BDTR_BKE | TIM_BDTR_OSSI | TIM_BDTR_OSSR | dtg_code(240);   /* BKP = 0: активный низкий уровень */
     TIM1->EGR = TIM_EGR_UG;
     TIM1->CR1 |= TIM_CR1_CEN;
 

@@ -85,14 +85,14 @@ static void poll()
 static String jsonEscape(const char *s) { String o; for (; *s; s++) { if (*s == '"' || *s == '\\') o += '\\'; o += *s; } return o; }
 static String statusJson()
 {
-    char b[512];
+    char b[640];
     snprintf(b, sizeof b,
         "{\"link\":%d,\"word\":%u,\"fault\":%u,\"f_out\":%.2f,\"f_ref\":%.2f,\"i\":%.2f,\"u\":%.1f,\"udc\":%.1f,\"t\":%.1f,"
-        "\"rpm\":%d,\"torque\":%.1f,\"p\":%d,\"di\":%u,\"ai\":%.1f,\"ol\":%u,\"log\":[%u,%u,%u,%u],\"hours\":%u,\"ver\":%u,\"state\":%u}",
+        "\"rpm\":%d,\"torque\":%.1f,\"p\":%d,\"di\":%u,\"ai\":%.1f,\"ol\":%u,\"log\":[%u,%u,%u,%u],\"hours\":%u,\"ver\":%u,\"state\":%u,\"sp\":%.1f,\"fb\":%.1f}",
         linkOk ? 1 : 0, st[ST_WORD], st[ST_FAULT], (int16_t)st[ST_F_OUT] / 100.0, (int16_t)st[ST_F_REF] / 100.0, st[ST_CURRENT] / 100.0,
         st[ST_VOLT] / 10.0, st[ST_VDC] / 10.0, (int16_t)st[ST_TEMP] / 10.0, (int16_t)st[ST_RPM], (int16_t)st[ST_TORQUE] / 10.0,
         (int16_t)st[ST_POWER], st[ST_DI], st[ST_AI] / 10.0, st[ST_OL], st[ST_FLT1], st[ST_FLT2], st[ST_FLT3], st[ST_FLT4],
-        st[ST_HOURS], st[ST_VERSION], st[ST_STATE]);
+        st[ST_HOURS], st[ST_VERSION], st[ST_STATE], st[ST_PID_SP] / 10.0, st[ST_PID_FB] / 10.0);
     return String(b);
 }
 static String paramsJson()

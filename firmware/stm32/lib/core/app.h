@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "vfd_core.h"
 
-#define FW_VERSION 100      /* 1.00 */
+#define FW_VERSION 110      /* 1.10 */
 
 typedef struct {
     vfd_t   m;
@@ -18,6 +18,11 @@ typedef struct {
     float   temp, ai;
     uint8_t di;
     uint8_t faults[4];      /* журнал последних аварий */
+    uint8_t tw_run;         /* защёлка пуска в 3-проводном режиме клемм */
+    uint8_t sleeping;       /* ПИД: режим «сон» */
+    uint8_t pid_on;
+    float   pid_sp, pid_fb, pid_i, pid_d, pid_prev;   /* ПИД-регулятор процесса, % */
+    uint8_t restart_cnt; uint16_t restart_tmr;        /* автосброс аварий */
     uint32_t run_seconds;
     uint32_t last_comm_ms;
 } app_t;

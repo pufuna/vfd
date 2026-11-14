@@ -43,7 +43,10 @@ static void on_key(uint8_t k, uint16_t held)
     switch (scr) {
     case SCR_MAIN:
         if (k == KEY_ENTER) { scr = SCR_MENU; break; }
-        if (param_val[P_REF_SRC] == 0 && (k == KEY_UP || k == KEY_DOWN)) {
+        if (app.pid_on && param_val[P_REF_SRC] != 2 && (k == KEY_UP || k == KEY_DOWN)) {      /* задание ПИД, % */
+            int v = param_val[P_PID_SET] + (k == KEY_UP ? 1 : -1) * step_for(held);
+            param_val[P_PID_SET] = (int16_t)(v > 1000 ? 1000 : (v < 0 ? 0 : v));
+        } else if (!app.pid_on && param_val[P_REF_SRC] == 0 && (k == KEY_UP || k == KEY_DOWN)) {
             int v = param_val[P_FREQ_SET] + (k == KEY_UP ? 1 : -1) * step_for(held);
             int mx = param_val[P_F_MAX];
             int mn = param_val[P_REV_EN] ? -mx : 0;
@@ -56,7 +59,7 @@ static void on_key(uint8_t k, uint16_t held)
         if (k == KEY_UP) sel = (int16_t)((sel + 1) % P_COUNT);
         else if (k == KEY_DOWN) sel = (int16_t)((sel + P_COUNT - 1) % P_COUNT);
         else if (k == KEY_ENTER && !held) {
-            if (!(running && (param_defs[sel].flags & PF_STOP))) { edit_val = param_val[sel]; scr = SCR_EDIT; }
+            if (!(running && (param_defs[sel].flags & PF_STOP)) && !(param_val[P_LOCK] && sel != P_LOCK)) { edit_val = param_val[sel]; scr = SCR_EDIT; }
         }
         break;
     case SCR_EDIT:
@@ -89,6 +92,7 @@ static void draw(void)
     if (scr == SCR_MAIN) {
         const char *st;
         if (!app.ready) st = en ? "CHARGE" : "ЗАРЯД";
+        else if (app.sleeping) st = en ? "SLEEP" : "СОН";
         else switch (m->state) {
             case VFD_ST_STOP: st = en ? "READY" : "ГОТОВ"; break;
             case VFD_ST_TUNE: st = en ? "TUNING" : "НАСТР."; break;
@@ -99,9 +103,19 @@ static void draw(void)
         fmt_val(v, sizeof v, (int)lroundf(m->f_out * 100), 2); snprintf(b, sizeof b, "%7s Hz", v); lcd_print(0, 10, b);
         fmt_val(v, sizeof v, (int)lroundf(m->i_rms * 10), 1);
         snprintf(b, sizeof b, "I=%5sA   U=%3dV", v, (int)lroundf(m->v_out)); lcd_print(1, 0, b);
-        snprintf(b, sizeof b, "Udc=%3dV   t=%3dC", (int)lroundf(m->vdc_f), (int)lroundf(app.temp)); lcd_print(2, 0, b);
-        fmt_val(v, sizeof v, (int)lroundf(fabsf(app.f_ref) * 10), 1);
-        snprintf(b, sizeof b, "%s%6s Hz  %s", en ? "SET " : "ЗАД.", v, app.f_ref < 0 ? "<<" : ">>"); lcd_print(3, 0, b);
+        if (param_val[P_DISP] == 1) snprintf(b, sizeof b, "n=%5d rpm M=%4d%%", (int)lroundf(m->speed_rpm * params_get_f(P_SPEED_K)), (int)lroundf(m->torque * 100));
+        else if (param_val[P_DISP] == 2) snprintf(b, sizeof b, "P=%5dW  OL=%3d%%", (int)lroundf(m->power), (int)lroundf(m->ol_acc * 100));
+        else snprintf(b, sizeof b, "Udc=%3dV   t=%3dC", (int)lroundf(m->vdc_f), (int)lroundf(app.temp));
+        lcd_print(2, 0, b);
+        if (app.pid_on) {
+            char w[12];
+            fmt_val(v, sizeof v, (int)lroundf(app.pid_sp * 10), 1); fmt_val(w, sizeof w, (int)lroundf(app.pid_fb * 10), 1);
+            snprintf(b, sizeof b, "%s%5s%% PV%5s%%", en ? "SET " : "ЗАД.", v, w);
+        } else {
+            fmt_val(v, sizeof v, (int)lroundf(fabsf(app.f_ref) * 10), 1);
+            snprintf(b, sizeof b, "%s%6s Hz  %s", en ? "SET " : "ЗАД.", v, app.f_ref < 0 ? "<<" : ">>");
+        }
+        lcd_print(3, 0, b);
         if (m->limiting) lcd_print(3, 19, "!");
         return;
     }

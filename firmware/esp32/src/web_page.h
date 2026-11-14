@@ -31,6 +31,8 @@ td input,td select{padding:4px 6px;width:120px}small{color:var(--mut)}
 <div class="tile"><b id="p">–</b><span>Мощность, Вт</span></div>
 <div class="tile"><b id="t">–</b><span>Радиатор, °C</span></div>
 <div class="tile"><b id="hours">–</b><span>Наработка, ч</span></div>
+<div class="tile"><b id="sp">–</b><span>ПИД: задание, %</span></div>
+<div class="tile"><b id="fb">–</b><span>ПИД: обратная связь, %</span></div>
 </div><p id="flt" class="bad"></p><small id="log"></small></div>
 <div class="card"><h2>Управление</h2><div class="row">
 <input id="fset" type="number" step="0.1" min="0" max="200" value="50" style="width:110px"> Гц
@@ -46,7 +48,7 @@ td input,td select{padding:4px 6px;width:120px}small{color:var(--mut)}
 <input id="appass" type="password" placeholder="Новый пароль точки доступа (от 8 знаков)">
 <button onclick="fetch('/api/wifi?ssid='+encodeURIComponent(ssid.value)+'&pass='+encodeURIComponent(pass.value)+(appass.value?'&appass='+encodeURIComponent(appass.value):''))">Сохранить и перезагрузить модуль</button></div></div>
 </main><script>
-const FL=['','КЗ / сверхток силового модуля','Перегрузка по току','Перенапряжение шины','Низкое напряжение шины','Перегрузка двигателя','Перегрев радиатора','Нет связи Modbus','Ошибка автонастройки','Внешняя авария','Шина не заряжена','Датчики тока'];
+const FL=['','КЗ / сверхток силового модуля','Перегрузка по току','Перенапряжение шины','Низкое напряжение шины','Перегрузка двигателя','Перегрев радиатора','Нет связи Modbus','Ошибка автонастройки','Внешняя авария','Шина не заряжена','Датчики тока','Недогрузка / сухой ход'];
 const ERR={'-1':'нет связи с приводом',2:'нет такого регистра',3:'значение вне диапазона',4:'запрещено при работе'};
 const $=id=>document.getElementById(id);
 function say(e){$('msg').textContent=e?('Ошибка: '+(ERR[e]||e)):'Готово';$('msg').className=e?'bad':'ok'}
@@ -59,10 +61,10 @@ ps.forEach((p,i)=>{const r=t.insertRow();r.insertCell().textContent='P'+String(i
 if(p.o){const s=document.createElement('select');p.o.split('|').forEach((o,k)=>{const e=document.createElement('option');e.value=k+p.min;e.textContent=o;s.appendChild(e)});s.value=p.v;s.onchange=()=>wr(i,s.value);c.appendChild(s);r.insertCell().textContent=''}
 else{const n=document.createElement('input');n.type='number';n.step=Math.pow(10,-p.dec);n.value=fmt(p.v,p.dec);n.onchange=()=>wr(i,Math.round(n.value*Math.pow(10,p.dec)));c.appendChild(n);c.append(' '+p.u);r.insertCell().textContent=fmt(p.min,p.dec)+' … '+fmt(p.max,p.dec)}})}
 async function tick(){try{const s=await(await fetch('/api/status')).json();
-['f_out','f_ref','i','u','udc','rpm','torque','p','t','hours'].forEach(k=>$(k).textContent=s[k]);
+['f_out','f_ref','i','u','udc','rpm','torque','p','t','hours','sp','fb'].forEach(k=>$(k).textContent=s[k]);
 const st=$('state');if(!s.link){st.textContent='нет связи с приводом';st.className='bad'}
 else if(s.word&8){st.textContent='АВАРИЯ';st.className='bad'}else if(s.word&64){st.textContent='автонастройка';st.className='ok'}
-else if(s.word&2){st.textContent='работа';st.className='ok'}else if(s.word&1){st.textContent='готов';st.className=''}else{st.textContent='заряд шины';st.className=''}
+else if(s.word&128){st.textContent='сон (ПИД)';st.className=''}else if(s.word&2){st.textContent='работа';st.className='ok'}else if(s.word&1){st.textContent='готов';st.className=''}else{st.textContent='заряд шины';st.className=''}
 $('flt').textContent=s.fault?('E'+String(s.fault).padStart(2,'0')+' — '+FL[s.fault]):'';
 $('log').textContent='Журнал аварий: '+s.log.map(x=>x?'E'+String(x).padStart(2,'0'):'—').join(', ')+' · версия ПО '+(s.ver/100).toFixed(2)}
 catch(e){$('state').textContent='нет связи с модулем';$('state').className='bad'}}

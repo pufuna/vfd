@@ -26,6 +26,7 @@ enum {
     VFD_F_EXT = 9,     /* внешняя авария (дискретный вход)                     */
     VFD_F_PRECH = 10,  /* не заряжена шина / неисправна цепь предзаряда        */
     VFD_F_SENSOR = 11, /* неисправность датчиков тока (смещение нуля)          */
+    VFD_F_UL = 12,     /* недогрузка (сухой ход насоса, обрыв ремня)           */
     VFD_F_COUNT
 };
 
@@ -44,6 +45,8 @@ typedef struct {
     float acc_time;      /* время разгона 0 -> f_rated, с                           */
     float dec_time;      /* время торможения f_rated -> 0, с                        */
     int   stop_coast;    /* 1 = останов выбегом                                     */
+    float scurve;        /* доля времени разгона на скругление рампы, 0..0.5        */
+    int   vf_quad;       /* 1 = квадратичная характеристика U/f (насосы, вентиляторы) */
     float i_limit;       /* токоограничение, А (действ.)                            */
     float i_trip;        /* программная защита по мгновенному току, А (ампл.)       */
     float ov_trip;       /* В                                                       */
@@ -69,6 +72,7 @@ typedef struct {
     volatile float   f_target;   /* заданная частота со знаком, Гц */
     volatile uint8_t run_cmd;
     volatile uint8_t tune_req;   /* запрос автонастройки при следующем пуске */
+    volatile uint8_t coast_req;  /* 1 = при снятии команды останов выбегом (дискретный вход) */
     /* состояние */
     volatile vfd_state_t state;
     volatile uint8_t fault;
@@ -80,7 +84,7 @@ typedef struct {
     float f_out, i_rms, v_out, torque, speed_rpm, power, vdc_f;
     float ol_acc;
     /* --- внутреннее --- */
-    float f_ramp, theta, t_state;
+    float f_ramp, ramp_rate, theta, t_state;
     float va_prev, vb_prev;
     float ia, ib;
     float i_int;                 /* интегратор регулятора пост. тока */
@@ -103,5 +107,6 @@ void vfd_step(vfd_t *m, float iu, float iw, float vdc, float duty[3]);
 void vfd_slow(vfd_t *m, float dt, float ol_time);
 void vfd_trip(vfd_t *m, uint8_t fault);
 void vfd_reset_fault(vfd_t *m);
+void vfd_set_ramp(vfd_t *m, float acc_time, float dec_time);   /* смена времён рампы на ходу */
 
 #endif

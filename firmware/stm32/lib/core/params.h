@@ -22,10 +22,13 @@ enum {
     P_BOOST, P_SLIP_COMP, P_SPD_KP, P_SPD_TI, P_I_LIMIT, P_OL_TIME, P_BRAKE_RES, P_UV, P_OH,
     P_DCB_TIME, P_DCB_CUR, P_AUTOSTART, P_MB_ADDR, P_MB_BAUD, P_MB_PARITY, P_MB_TIMEOUT, P_LANG,
     P_DI3_FUNC, P_F_FIXED, P_RELAY_FUNC, P_CAL_I, P_CAL_U, P_DT_COMP, P_FACTORY,
+    P_TERM_MODE, P_VF_CURVE, P_SCURVE, P_SKIP_F, P_SKIP_BAND, P_ACC2, P_DEC2, P_F_JOG, P_AI_MIN, P_AI_MAX, P_AI_FILT,
+    P_PID_MODE, P_PID_SET, P_PID_KP, P_PID_TI, P_PID_TD, P_PID_FMIN, P_SLEEP_F, P_SLEEP_T, P_WAKE,
+    P_UL_CUR, P_UL_TIME, P_RESTART_N, P_RESTART_T, P_FAN_MODE, P_DISP, P_SPEED_K, P_LOCK,
     P_COUNT
 };
 
-#define PWM_DEAD_TIME 2.0e-6f     /* мёртвое время, с */
+#define PWM_DEAD_TIME 2.5e-6f     /* мёртвое время, с */
 #define I_TRIP_SW     21.0f       /* программная защита по мгновенному току, А */
 #define OV_TRIP       400.0f      /* В */
 #define OV_STALL      375.0f      /* В */
