@@ -8,3 +8,4 @@ __pycache__/
 *-backups/
 fp-info-cache
 *.lck
+firmware/sim/dump_params

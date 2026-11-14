@@ -141,7 +141,7 @@ int main(void)
     press(KEY_STOP); wr(P_CMD_SRC, 0); wr(P_MODE, 1); run_ms(50); press(KEY_RUN); run_ms(50);
     CHECK(app.m.fault == VFD_F_TUNE, "вектор без автонастройки запрещён: %d", app.m.fault);
     /* сохранение */
-    press(KEY_STOP); wr(P_ACC, 77); wr(REG_SAVE, 1); run_ms(30);
+    press(KEY_STOP); wr(P_ACC, 77); wr(REG_SAVE, 1); run_ms(400);
     app_init();
     CHECK(param_val[P_ACC] == 77 && app.faults[0] == VFD_F_TUNE, "сохранение/загрузка параметров и журнала");
     vdc = 150; run_ms(3000); CHECK(!app.ready || 1, "-");

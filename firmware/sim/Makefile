@@ -8,4 +8,8 @@ test_core: test_core.c $(CORE)/params.c $(CORE)/modbus.c $(CORE)/vfd_core.c $(CO
 test: all
 	./sim && ./test_core
 clean:
-	rm -f sim test_core *.csv
+	rm -f sim test_core dump_params *.csv glyphs.txt
+dump_params: dump_params.c $(CORE)/params.c $(CORE)/app.c $(CORE)/ui.c $(CORE)/lcd.c $(CORE)/modbus.c $(CORE)/vfd_core.c hw_stub.c
+	$(CC) $(CFLAGS) -o $@ $^ -lm
+docs: dump_params
+	./dump_params > ../../docs/parameters.md
