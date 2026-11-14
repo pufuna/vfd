@@ -1,0 +1,10 @@
+.pio/
+firmware/sim/sim
+firmware/sim/test_core
+firmware/sim/*.csv
+firmware/sim/glyphs.txt
+__pycache__/
+*.bak
+*-backups/
+fp-info-cache
+*.lck
