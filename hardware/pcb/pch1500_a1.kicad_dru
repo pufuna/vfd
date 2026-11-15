@@ -1,0 +1,9 @@
+(version 1)
+# Барьер изоляции: медь изолированной стороны не ближе 2,9 мм к меди «горячей» стороны
+# (минимум задают корпуса датчиков тока ACS712; у остальных элементов барьера — не менее 5,8 мм)
+(rule "isolation_barrier" (condition "A.NetClass == 'ISO' && (B.NetClass == 'HOT' || B.NetClass == 'HV' || B.NetClass == 'MAINS' || B.NetClass == 'LV' || B.NetClass == 'P5')") (constraint clearance (min 2.9mm)))
+(rule "bootstrap_U" (condition "A.NetName == 'VBU' && B.NetName == 'VSU'") (constraint clearance (min 0.4mm)))
+(rule "bootstrap_V" (condition "A.NetName == 'VBV' && B.NetName == 'VSV'") (constraint clearance (min 0.4mm)))
+(rule "bootstrap_W" (condition "A.NetName == 'VBW' && B.NetName == 'VSW'") (constraint clearance (min 0.4mm)))
+(rule "current_sensor_U" (condition "A.NetName == 'U_IPM' && B.NetName == 'U_OUT'") (constraint clearance (min 0.3mm)))
+(rule "current_sensor_W" (condition "A.NetName == 'W_OUT' && B.NetName == 'W_MOT'") (constraint clearance (min 0.3mm)))

@@ -42,12 +42,12 @@ BIG = {
     # вход шины постоянного тока, предзаряд — левая колонка
     "J3": (0, 2.0, 38.0), "RT1": (0, 16.5, 39.0), "K1": (0, 2.0, 52.0),
     "R5": (90, 22.0, 80.0), "R6": (90, 28.5, 80.0), "HL1": (90, 2.5, 82.0),
-    "J4": (0, 2.5, 124.0),
-    "K2": (0, 157.0, 108.5), "J11": (270, 169.0, 91.0), "J9": (0, 127.0, 137.5), "J10": (0, 143.5, 137.5), "J6": (0, 160.0, 137.5),
+    "J4": (0, 2.5, 124.0), "C27": (0, 152.0, 6.0),
+    "K2": (0, 157.0, 108.5), "J11": (270, 169.0, 91.0), "J6": (0, 127.0, 137.5), "J10": (0, 143.5, 137.5), "J9": (0, 160.0, 137.5),
     "J7": (0, 176.0, 3.0), "J8": (0, 176.0, 15.5), "J12": (0, 171.0, 3.0), "J13": (0, 171.0, 10.5),
 }
 # элементы с заданным положением первого вывода (угол, x, y); NOSNAP — не привязывать к сетке
-NOSNAP = {"U1", "C6", "C7", "C8"}
+NOSNAP = {"U1", "C6", "C7", "C8", "R11", "C5"}
 PIN1 = {
     "C1": (0, 47.0, 52.0), "C2": (0, 47.0, 84.0), "C3": (0, 47.0, 116.0),
     "U1": (0, 88.0, 111.0),                      # начало координат посадочного места — центр корпуса
@@ -58,10 +58,12 @@ PIN1 = {
     "U14": (0, BX, 114.0), "U15": (0, BX, 124.0),
     "R13": (0, 130.0, 46.6), "R14": (0, 130.0, 38.98), "R15": (0, 130.0, 58.0), "R16": (0, 130.0, 50.38),
     "R17": (0, 130.0, 69.4), "R18": (0, 130.0, 61.78), "R4": (0, 130.0, 77.5),
-    "A2": (0, 158.0, 40.0),
+    "A2": (0, 141.0, 40.0),
     # бутстрепные конденсаторы: «минус» строго над выводом VS, дорожки VB проходят между выводами модуля
+    "C5": (0, 102.3, 102.2), "R11": (90, 98.5, 106.2),      # фильтр ITRIP — SMD над корпусом модуля, у выводов 15, 16
     "C6": (180, 74.9, 90.0), "C7": (180, 80.3, 84.0), "C8": (180, 85.3, 90.0),
-    "U3": (0, 95.5, 50.5), "U18": (0, 96.0, 70.5), "U10": (0, 3.6, 108.0),
+    "U3": (0, 95.6, 52.0), "U18": (0, 70.0, 70.0),
+    "R25": (270, 88.9, 80.0), "R27": (270, 91.9, 80.0), "R29": (270, 94.9, 80.0), "R26": (270, 97.9, 80.0), "R28": (270, 100.9, 80.0), "R30": (270, 103.9, 80.0), "U10": (0, 3.6, 108.0),
     # высоковольтные делители и тормозной ключ: расстояния между площадками разных цепей не менее 3 мм
     "R42": (0, 16.0, 146.0), "R43": (0, 24.5, 146.0), "R44": (0, 33.0, 146.0),
     "R19": (0, 107.5, 44.06), "R20": (0, 107.5, 41.52), "R21": (0, 107.5, 55.46), "R22": (0, 107.5, 52.92),
@@ -73,17 +75,16 @@ PIN1 = {
 # мелкие элементы: области автоматической раскладки (x0, y0, x1, y1, угол, [позиции])
 PACK = [
     (2.0, 67.5, 34.5, 78.5, 0, ["VT1", "R70", "R71", "R72", "VD2"]),
-    (67.0, 39.5, 94.0, 48.4, 0, ["U2", "C15", "C16"]), (97.0, 39.0, 106.8, 48.6, 0, ["C12"]),
-    (67.5, 48.6, 93.6, 60.0, 0, ["C18", "C19", "C20", "R25", "R26", "R27", "R28", "R29", "R30"]),
-    (67.5, 60.2, 93.6, 80.6, 0, ["C46", "C47", "C48", "C49", "C50", "C51", "C52", "R12", "C14", "R11", "C5", "R31", "R32", "R33"]),
-    (107.2, 71.5, 115.1, 79.5, 0, ["C13", "C17"]),
-    (106.5, 80.0, 114.6, 108.0, 0, ["R45", "C24", "C25"]),
+    (67.0, 39.5, 106.0, 48.6, 0, ["U2", "C15", "C16", "C12"]),
+    (67.5, 49.2, 94.5, 68.6, 0, ["C18", "C19", "C20", "C13", "C17", "C14", "R12", "C52", "R31", "R32", "R33"]),
+    (106.8, 88.5, 114.6, 108.0, 0, ["R45", "C24", "C25"]),
     (14.3, 109.0, 36.8, 126.6, 0, ["C30", "U12", "R41", "R37", "R55", "C31", "R38", "R39"]),
-    (139.0, 36.0, 156.0, 108.0, 0, ["R34", "R46", "R47", "C42", "R48", "R49", "C43", "R56", "R57", "C40", "R58", "R59", "C41", "C26",
-                                     "C37", "C36", "C39", "C38", "C28", "R52", "C45", "C27", "R50", "R51", "JP1", "C29", "R68"]),
-    (131.5, 108.5, 156.6, 136.5, 0, ["R62", "R65", "C33", "R63", "R66", "C34", "R64", "R67", "C35", "U16", "C32", "R60", "JP2", "R61"]),
+    (159.5, 36.0, 180.0, 73.5, 0, ["R56", "R57", "C40", "R58", "R59", "C41", "R46", "R47", "C42", "R48", "R49", "C43",
+                                   "R52", "C45", "R50", "R51", "C29", "JP1"]),
+    (159.5, 74.5, 180.0, 90.5, 0, ["R65", "R62", "R66", "R63", "R67", "R64"]),
+    (131.5, 92.0, 156.5, 108.0, 0, ["C33", "C34", "C35", "R53", "R54", "C26", "C28", "R34"]),
+    (131.5, 108.5, 156.6, 136.5, 0, ["C36", "C37", "C38", "C39", "U16", "C32", "R60", "JP2", "R61", "R68"]),
     (156.8, 125.0, 180.0, 137.4, 0, ["VD4", "VT3", "VD5", "VT4"]),
-    (146.0, 96.0, 156.5, 108.0, 0, ["R53", "R54"]),
 ]
 SLOTS = [  # фрезерованные прорези под элементами барьера (x, y0, y1), ширина 1,2 мм
     (BARRIER_X, 37.5, 48.0), (BARRIER_X, 49.0, 59.4), (BARRIER_X, 60.4, 70.8), (BARRIER_X, 73.5, 78.9),
@@ -269,21 +270,22 @@ JOBS = [
     ("L_IN", 2.0, ["J1.1", "J2.1"]), ("N_IN", 2.0, ["J1.2", "J2.2"]), ("BR+", 2.0, ["J3.1", "RT1.1", "K1.11"]),
     ("DCP", 2.0, ["RT1.2", "K1.14", "C1.1"], TOP), ("DCP", 2.4, ["C1.1", "C2.1", "C3.1", "U1.23", "C4.1"], TOP),
     ("GNDH", 3.0, ["J3.2", "C1.2", "C2.2", "C3.2"], BOT), ("GNDH", 3.0, ["C3.2", "R10.2"], TOP),
-    ("NSH", 2.4, ["U1.19", "U1.18", "U1.17", "R9.1", "C4.2"], TOP), ("SHM", 2.4, None, TOP),
+    ("NSH", 2.4, ["U1.19", "U1.18", "U1.17", "R9.1", "C4.2"], TOP), ("SHM", 2.4, None, TOP), ("NSH", 0.6, ["U1.19", "R11.1"], TOP),
     ("U_IPM", 1.8, ["U1.22", "U14.1"], BOT), ("W_OUT", 1.8, ["U1.20", "U15.1"], BOT), ("V_OUT", 1.8, None, BOT),
     ("U_OUT", 1.8, ["U14.4", "J5.1"]), ("W_MOT", 1.8, ["U15.4", "J5.3"]),
     ("BRK_C", 1.5, None), ("DCP", 1.5, ["C3.1", "J4.1", "VD3.1"]),
     ("L_IN", 1.0, None), ("N_IN", 1.0, None), ("L_AUX", 0.6, None), ("X2D", 0.6, None),
     ("DCP", 0.6, None), ("BLD", 0.6, None), ("VD_A", 0.6, None), ("VD_B", 0.6, None), ("BRK_D", 0.6, None),
+    ("GNDH", 0.6, ["PS1.3", "U2.2"], BOT), ("GNDH", 0.6, ["U4.5", "U5.5", "U6.5", "U13.3", "U13.4", "R45.2"], BOT),
     # шины питания вдоль барьера изоляции прокладываются до сигнальных цепей
-    ("GND", 0.6, ["U4.2", "U4.3", "U5.2", "U5.3", "U6.2", "U6.3", "U17.2", "U11.3", "U13.5", "U14.5", "U15.5"], BOT),
     ("+5V", 0.6, ["U13.8", "U14.8", "U15.8"], BOT),
-    ("GNDH", 0.6, ["U4.5", "U5.5", "U6.5", "U13.3", "U13.4"], BOT),
+    ("GND", 0.6, ["U14.5", "C36.2"], BOT), ("GND", 0.6, ["U15.5", "C38.2"], BOT),
+    ("GND", 0.6, ["C36.2", "U13.5", "C28.2", "C35.2", "C33.2", "U11.3", "C34.2", "C26.2", "A2.19", "A2.39"], BOT),
     ("+5VH", 0.6, ["U4.8", "U5.8", "U6.8", "R19.1", "R20.1", "R21.1", "R22.1", "R23.1", "R24.1", "U13.1"], BOT),
     ("!", 0.3, None, (1.0, 2.0)),
     ("+5VH", 0.6, None, BOT), ("+15VH", 0.6, None, BOT), ("+5V", 0.6, None, BOT), ("+3V3", 0.6, None, BOT),
     ("K1P", 0.6, None, BOT), ("K1C", 0.6, None, BOT), ("K2C", 0.6, None, BOT), ("FAN_N", 0.6, None, BOT),
-    ("GNDH", 0.6, None, BOT), ("GND", 0.6, None, BOT),
+    # GND и GNDH (кроме силовой части) соединяются полигонами на обоих слоях — см. finish()
     ("*", 0.3, None, (1.0, 2.0)),
 ]
 # дорожки, проложенные вручную (слой F.Cu): бутстрепные цепи у выводов модуля
@@ -301,7 +303,7 @@ def route():
     board = pcbnew.LoadBoard(PCB)
     for t in list(board.GetTracks()): board.Remove(t)
     allnets = sorted(N.nets())
-    special = {j[0] for j in JOBS if j[0] not in "*!"} | {m[0] for m in MANUAL}
+    special = {j[0] for j in JOBS if j[0] not in "*!"} | {m[0] for m in MANUAL} | {"GND"}
     # геометрия площадок
     padinfo, npth, anon = [], [], 0
     for fp in board.GetFootprints():
@@ -370,37 +372,29 @@ def route():
     R.snapshot()
     print(f"силовые цепи: {time.time() - t0:.0f} с, неразведённых {len(R.fail)}", flush=True)
     hard_fail = list(R.fail)
-    # очередь остальных цепей с rip-up
-    from collections import deque
-    jobs_of = {}
-    for j in soft: jobs_of.setdefault(j[0], []).append(j)
-    queue = deque(dict.fromkeys(j[0] for j in soft)); ripped = {}; nrip = 0
-    while queue:
-        name = queue.popleft()
-        for (_, w, pins, bias) in jobs_of[name]:
-            key = (net_cl(name), GROUP.get(name), w); pl = padlist(name, pins)
-            if not pl: continue
-            R.fail = [f for f in R.fail if f[0] != name]
-            if not R.route(name, key, pl, f"w={w}", bias): continue
-            # не вышло: найти мешающие цепи по пути, проложенному без учёта снимаемых дорожек
-            if nrip >= 600 or ripped.get(name, 0) >= 10: continue
-            n = R.netid[name]; tree = R.tree.get(n, set())
-            todo = [p for p in pl if not any(cc in tree for cc in R.pad_cells(p))]
-            block = set()
-            for p in todo:
-                path = R.probe(name, key, p, bias)
-                if path: block |= R.blockers(path, name, key)
-            block = {m for m in block if names_of[m] in jobs_of and ripped.get(names_of[m], 0) < 10}
-            if not block: continue
-            nrip += 1; ripped[name] = ripped.get(name, 0) + 1
-            R.rip(block | {n})
-            for m in block:
-                ripped[names_of[m]] = ripped.get(names_of[m], 0) + 1
-                if names_of[m] not in queue: queue.append(names_of[m])
-            queue.appendleft(name)                      # текущую цепь — заново и первой
-            break
+    # остальные цепи — согласованная трассировка (PathFinder), состояние сохраняется между запусками
+    import hashlib, pathfinder
+    softnets = {}
+    for (name, w, pins, bias) in soft:
+        d = softnets.setdefault(name, dict(name=name, w=w, pads=[], bias=bias, key=(net_cl(name), GROUP.get(name), w)))
+        for p in padlist(name, pins):
+            if p not in d["pads"]: d["pads"].append(p)
+    nets = sorted(softnets.values(), key=lambda d: hpwl(d["name"]))
+    sig = hashlib.md5((repr(sorted((d["ref"], round(d["x"], 3), round(d["y"], 3)) for d in padinfo)) + repr([(n["name"], n["w"]) for n in nets])
+                       + repr(sorted(R.segs))).encode()).hexdigest()
+    pfr = pathfinder.PF(R, nets, sig, os.path.join(HERE, ".pf_state.pkl"))
+    done = pfr.run(float(os.environ.get("PF_BUDGET", "480")))
+    dropped = [] if done else pfr.drop_conflicts()
+    if dropped: print("  сняты как конфликтующие:", ", ".join(dropped))
+    for net in nets:
+        st = pfr.state.get(net["name"]) or {"segs": [], "vias": [], "fail": [p["ref"] for p in net["pads"][1:]]}
+        n = R.netid[net["name"]]
+        for (ax, ay, bx, by, w, layer) in st["segs"] + st.get("stubs", []): R.segs.append((ax, ay, bx, by, w, n, layer))
+        for (x, y, d, dr) in st["vias"]: R.vias.append((x, y, d, dr, n))
+        for ref in st["fail"]: R.fail.append((net["name"], ref, "нет пути"))
+    nrip = pfr.it
     R.fail = hard_fail + [f for f in R.fail if f not in hard_fail]
-    print(f"итог: {time.time() - t0:.0f} с, снятий {nrip}, отрезков {len(R.segs)}, переходов {len(R.vias)}, неразведённых соединений {len(R.fail)}")
+    print(f"итог: {time.time() - t0:.0f} с, итераций {nrip}, отрезков {len(R.segs)}, переходов {len(R.vias)}, неразведённых соединений {len(R.fail)}")
     for f in R.fail: print("   ", f)
     names = {v: k for k, v in R.netid.items()}
     for ax, ay, bx, by, w, n, layer in R.segs:
@@ -437,21 +431,23 @@ def write_final_project(board):
     iso = iso_nets(board)
     pats = [{"netclass": k, "pattern": n} for k, lst in (("MAINS", MAINS), ("HV", HV), ("LV", LV)) for n in lst]
     pats += [{"netclass": "P5", "pattern": n} for n in P5 if n not in iso] + [{"netclass": "ISO", "pattern": n} for n in sorted(iso)]
+    named = set(MAINS) | set(HV) | set(LV) | set(P5) | iso
+    pats += [{"netclass": "HOT", "pattern": n} for n in sorted(N.nets()) if n not in named]
     pro = {"board": {"design_settings": {"defaults": {}, "rules": {"min_clearance": 0.2, "min_track_width": 0.25, "min_via_diameter": 0.6,
             "min_via_annular_width": 0.15, "min_through_hole_diameter": 0.3, "min_hole_to_hole": 0.25, "min_copper_edge_clearance": 0.3,
             "min_hole_clearance": 0.2, "solder_mask_to_copper_clearance": 0.0, "min_silk_clearance": 0.0},
             "rule_severities": {k: "ignore" for k in ("silk_overlap", "silk_over_copper", "silk_edge_clearance", "courtyards_overlap", "lib_footprint_issues",
                                 "lib_footprint_mismatch", "text_height", "text_thickness", "missing_courtyard", "npth_inside_courtyard", "pth_inside_courtyard",
-                                "solder_mask_bridge", "footprint_type_mismatch", "isolated_copper", "starved_thermal", "unresolved_variable", "extra_footprint",
+                                "solder_mask_bridge", "footprint_type_mismatch", "isolated_copper", "track_dangling", "starved_thermal", "unresolved_variable", "extra_footprint",
                                 "missing_footprint", "duplicate_footprints", "net_conflict", "malformed_courtyard", "overlapping_pads", "silk_overlap")}}},
-           "net_settings": {"classes": [cls("Default", 0.25, 0.3), cls("P5", 0.3, 0.6), cls("LV", 0.4, 0.6), cls("HV", 2.0, 0.6), cls("MAINS", 2.5, 1.0), cls("ISO", 0.25, 0.3)],
+           "net_settings": {"classes": [cls("Default", 0.25, 0.3), cls("P5", 0.3, 0.6), cls("LV", 0.4, 0.6), cls("HV", 2.0, 0.6), cls("MAINS", 2.5, 1.0), cls("ISO", 0.25, 0.3), cls("HOT", 0.25, 0.3)],
                             "meta": {"version": 3}, "net_colors": None, "netclass_assignments": None, "netclass_patterns": pats},
            "meta": {"filename": "pch1500_a1.kicad_pro", "version": 1}}
     json.dump(pro, open(FINAL.replace(".kicad_pcb", ".kicad_pro"), "w"), indent=1, ensure_ascii=False)
     rules = ['(version 1)',
              '# Барьер изоляции: медь изолированной стороны не ближе 2,9 мм к меди «горячей» стороны',
              '# (минимум задают корпуса датчиков тока ACS712; у остальных элементов барьера — не менее 5,8 мм)',
-             '(rule "isolation_barrier" (condition "A.NetClass == \'ISO\' && B.NetClass != \'ISO\'") (constraint clearance (min 2.9mm)))']
+             '(rule "isolation_barrier" (condition "A.NetClass == \'ISO\' && (B.NetClass == \'HOT\' || B.NetClass == \'HV\' || B.NetClass == \'MAINS\' || B.NetClass == \'LV\' || B.NetClass == \'P5\')") (constraint clearance (min 2.9mm)))']
     for ph in "UVW":
         rules.append(f'(rule "bootstrap_{ph}" (condition "A.NetName == \'VB{ph}\' && B.NetName == \'VS{ph}\'") (constraint clearance (min 0.4mm)))')
     rules.append('(rule "current_sensor_U" (condition "A.NetName == \'U_IPM\' && B.NetName == \'U_OUT\'") (constraint clearance (min 0.3mm)))')

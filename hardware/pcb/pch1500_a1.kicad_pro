@@ -1,0 +1,650 @@
+{
+ "board": {
+  "design_settings": {
+   "defaults": {},
+   "rules": {
+    "min_clearance": 0.2,
+    "min_track_width": 0.25,
+    "min_via_diameter": 0.6,
+    "min_via_annular_width": 0.15,
+    "min_through_hole_diameter": 0.3,
+    "min_hole_to_hole": 0.25,
+    "min_copper_edge_clearance": 0.3,
+    "min_hole_clearance": 0.2,
+    "solder_mask_to_copper_clearance": 0.0,
+    "min_silk_clearance": 0.0
+   },
+   "rule_severities": {
+    "silk_overlap": "ignore",
+    "silk_over_copper": "ignore",
+    "silk_edge_clearance": "ignore",
+    "courtyards_overlap": "ignore",
+    "lib_footprint_issues": "ignore",
+    "lib_footprint_mismatch": "ignore",
+    "text_height": "ignore",
+    "text_thickness": "ignore",
+    "missing_courtyard": "ignore",
+    "npth_inside_courtyard": "ignore",
+    "pth_inside_courtyard": "ignore",
+    "solder_mask_bridge": "ignore",
+    "footprint_type_mismatch": "ignore",
+    "isolated_copper": "ignore",
+    "track_dangling": "ignore",
+    "starved_thermal": "ignore",
+    "unresolved_variable": "ignore",
+    "extra_footprint": "ignore",
+    "missing_footprint": "ignore",
+    "duplicate_footprints": "ignore",
+    "net_conflict": "ignore",
+    "malformed_courtyard": "ignore",
+    "overlapping_pads": "ignore"
+   }
+  }
+ },
+ "net_settings": {
+  "classes": [
+   {
+    "name": "Default",
+    "clearance": 0.25,
+    "track_width": 0.3,
+    "via_diameter": 0.9,
+    "via_drill": 0.5,
+    "bus_width": 12,
+    "wire_width": 6,
+    "diff_pair_gap": 0.25,
+    "diff_pair_via_gap": 0.25,
+    "diff_pair_width": 0.2,
+    "line_style": 0,
+    "microvia_diameter": 0.3,
+    "microvia_drill": 0.1,
+    "pcb_color": "rgba(0, 0, 0, 0.000)",
+    "schematic_color": "rgba(0, 0, 0, 0.000)"
+   },
+   {
+    "name": "P5",
+    "clearance": 0.3,
+    "track_width": 0.6,
+    "via_diameter": 0.9,
+    "via_drill": 0.5,
+    "bus_width": 12,
+    "wire_width": 6,
+    "diff_pair_gap": 0.25,
+    "diff_pair_via_gap": 0.25,
+    "diff_pair_width": 0.2,
+    "line_style": 0,
+    "microvia_diameter": 0.3,
+    "microvia_drill": 0.1,
+    "pcb_color": "rgba(0, 0, 0, 0.000)",
+    "schematic_color": "rgba(0, 0, 0, 0.000)"
+   },
+   {
+    "name": "LV",
+    "clearance": 0.4,
+    "track_width": 0.6,
+    "via_diameter": 0.9,
+    "via_drill": 0.5,
+    "bus_width": 12,
+    "wire_width": 6,
+    "diff_pair_gap": 0.25,
+    "diff_pair_via_gap": 0.25,
+    "diff_pair_width": 0.2,
+    "line_style": 0,
+    "microvia_diameter": 0.3,
+    "microvia_drill": 0.1,
+    "pcb_color": "rgba(0, 0, 0, 0.000)",
+    "schematic_color": "rgba(0, 0, 0, 0.000)"
+   },
+   {
+    "name": "HV",
+    "clearance": 2.0,
+    "track_width": 0.6,
+    "via_diameter": 0.9,
+    "via_drill": 0.5,
+    "bus_width": 12,
+    "wire_width": 6,
+    "diff_pair_gap": 0.25,
+    "diff_pair_via_gap": 0.25,
+    "diff_pair_width": 0.2,
+    "line_style": 0,
+    "microvia_diameter": 0.3,
+    "microvia_drill": 0.1,
+    "pcb_color": "rgba(0, 0, 0, 0.000)",
+    "schematic_color": "rgba(0, 0, 0, 0.000)"
+   },
+   {
+    "name": "MAINS",
+    "clearance": 2.5,
+    "track_width": 1.0,
+    "via_diameter": 0.9,
+    "via_drill": 0.5,
+    "bus_width": 12,
+    "wire_width": 6,
+    "diff_pair_gap": 0.25,
+    "diff_pair_via_gap": 0.25,
+    "diff_pair_width": 0.2,
+    "line_style": 0,
+    "microvia_diameter": 0.3,
+    "microvia_drill": 0.1,
+    "pcb_color": "rgba(0, 0, 0, 0.000)",
+    "schematic_color": "rgba(0, 0, 0, 0.000)"
+   },
+   {
+    "name": "ISO",
+    "clearance": 0.25,
+    "track_width": 0.3,
+    "via_diameter": 0.9,
+    "via_drill": 0.5,
+    "bus_width": 12,
+    "wire_width": 6,
+    "diff_pair_gap": 0.25,
+    "diff_pair_via_gap": 0.25,
+    "diff_pair_width": 0.2,
+    "line_style": 0,
+    "microvia_diameter": 0.3,
+    "microvia_drill": 0.1,
+    "pcb_color": "rgba(0, 0, 0, 0.000)",
+    "schematic_color": "rgba(0, 0, 0, 0.000)"
+   },
+   {
+    "name": "HOT",
+    "clearance": 0.25,
+    "track_width": 0.3,
+    "via_diameter": 0.9,
+    "via_drill": 0.5,
+    "bus_width": 12,
+    "wire_width": 6,
+    "diff_pair_gap": 0.25,
+    "diff_pair_via_gap": 0.25,
+    "diff_pair_width": 0.2,
+    "line_style": 0,
+    "microvia_diameter": 0.3,
+    "microvia_drill": 0.1,
+    "pcb_color": "rgba(0, 0, 0, 0.000)",
+    "schematic_color": "rgba(0, 0, 0, 0.000)"
+   }
+  ],
+  "meta": {
+   "version": 3
+  },
+  "net_colors": null,
+  "netclass_assignments": null,
+  "netclass_patterns": [
+   {
+    "netclass": "MAINS",
+    "pattern": "L_IN"
+   },
+   {
+    "netclass": "MAINS",
+    "pattern": "N_IN"
+   },
+   {
+    "netclass": "MAINS",
+    "pattern": "L_AUX"
+   },
+   {
+    "netclass": "MAINS",
+    "pattern": "X2D"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "BR+"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "DCP"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "U_IPM"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "U_OUT"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "V_OUT"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "W_OUT"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "W_MOT"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "BRK_C"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "BLD"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "VD_A"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "VD_B"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "BRK_D"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "VSU"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "VBU"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "VSV"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "VBV"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "VSW"
+   },
+   {
+    "netclass": "HV",
+    "pattern": "VBW"
+   },
+   {
+    "netclass": "LV",
+    "pattern": "GNDH"
+   },
+   {
+    "netclass": "LV",
+    "pattern": "NSH"
+   },
+   {
+    "netclass": "LV",
+    "pattern": "SHM"
+   },
+   {
+    "netclass": "P5",
+    "pattern": "+15VH"
+   },
+   {
+    "netclass": "P5",
+    "pattern": "+5VH"
+   },
+   {
+    "netclass": "P5",
+    "pattern": "K1P"
+   },
+   {
+    "netclass": "P5",
+    "pattern": "K1C"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "+3V3"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "+5V"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "AI"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "AI_D"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "AI_X"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "DE"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "DI1"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "DI1_X"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "DI2"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "DI2_X"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "DI3"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "DI3_X"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "FAN"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "FANB"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "FAN_N"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "FAULT_N"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "FLT_U"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "FLT_W"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "GND"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "IU"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "IU_5"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "IW"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "IW_5"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "K1A"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "K2B"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "K2C"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "LA0"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "LA1"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "LA2"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "LA3"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "LA4"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "LA5"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "NTC"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "PRECH"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "PWM_UH"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "PWM_UL"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "PWM_VH"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "PWM_VL"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "PWM_WH"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "PWM_WL"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "REF_X"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "RLY"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "RL_COM"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "RL_NC"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "RL_NO"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "RS_A"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "RS_B"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "RS_T"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "RX485"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "RX_ESP"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "SCL"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "SDA"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "TX485"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "TX_ESP"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "VBN"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "VBP"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "VO_N"
+   },
+   {
+    "netclass": "ISO",
+    "pattern": "VO_P"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "BRK_G"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "BRK_GQ"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "BRK_S"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "FLT_A"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "FLT_K"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "HU"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "HV"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "HW"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "IN0"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "IN1"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "IN2"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "IN3"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "IN4"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "IN5"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "ITRIP"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "K1B"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "K1E"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "LEDA"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "LU"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "LV"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "LW"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "OC0"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "OC1"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "OC2"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "OC3"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "OC4"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "OC5"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "REF06"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "REF25"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "VFO"
+   },
+   {
+    "netclass": "HOT",
+    "pattern": "VSNS"
+   }
+  ]
+ },
+ "meta": {
+  "filename": "pch1500_a1.kicad_pro",
+  "version": 1
+ }
+}

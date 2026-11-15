@@ -9,3 +9,4 @@ __pycache__/
 fp-info-cache
 *.lck
 firmware/sim/dump_params
+.pf_state.pkl
