@@ -4,8 +4,8 @@
 import heapq, math
 import numpy as np
 
-G = 0.25            # шаг сетки, мм
-MARGIN = 0.15       # запас на дискретизацию
+G = 0.254           # шаг сетки, мм (1/10 шага выводов 2,54 мм — дорожка проходит точно между выводами DIP)
+MARGIN = 0.04       # запас на дискретизацию
 VIA_COST = 60       # цена перехода в шагах сетки
 EDGE_CLR = 0.5
 
@@ -94,7 +94,7 @@ class Router:
         self.segs.append((ax, ay, bx, by, w, n, layer)); self.stamp_seg(ax, ay, bx, by, w / 2, n, layer)
 
     # ------------------------------------------------------------------
-    def route(self, name, key, pads, label=""):
+    def route(self, name, key, pads, label="", bias=(1.0, 1.0)):
         """Соединить площадки pads цепи name дорожкой класса key. Возвращает число несоединённых площадок."""
         n = self.netid[name]; c = self.cls[key]; g = self.grid[key]
         ny, nx = self.ny, self.nx
@@ -103,6 +103,9 @@ class Router:
         vr = max(0, int(math.ceil((c.via_d - c.w) / 2 / G - 0.01)))
         tht = self.tht.get(n, set())
         tree = self.tree.setdefault(n, set())
+        if not tree and len(pads) > 2:                 # начинать с площадки, ближайшей к центру масс цепи
+            cx = sum(p["x"] for p in pads) / len(pads); cy = sum(p["y"] for p in pads) / len(pads)
+            pads = sorted(pads, key=lambda p: abs(p["x"] - cx) + abs(p["y"] - cy))
         cells = [self.pad_cells(p) for p in pads]
         done = [bool(tree) and any(cc in tree for cc in cells[i]) for i in range(len(pads))]
         if not tree:
@@ -117,7 +120,12 @@ class Router:
                 return 0
             t = min(cand, key=dist); done[t] = True
             targets = {cc for cc in cells[t] if passb[cc[0]][cc[1] * nx + cc[2]]}
-            path = self._astar(tree, targets, pads[t], passb, vr, tht) if targets else None
+            path = self._astar(tree, targets, pads[t], passb, vr, tht, bias) if targets else None
+            if path is None and len(tree) == len(cells[0]) and self.last_it < 3000 and len(pads) > 2 and not hasattr(self, "_retry"):
+                # стартовая площадка «заперта»: начать с другой площадки, запертую присоединить позже
+                self._retry = True; self.tree[n] = set()
+                r = self.route(name, key, pads[1:] + pads[:1], label, bias); del self._retry
+                return r
             if path is None:
                 nsrc = sum(1 for (l, j, i) in tree if passb[l][j * nx + i])
                 nfail += 1; self.fail.append((name, pads[t]["ref"], label, f"src={nsrc}/{len(tree)} tgt={len(targets)}/{len(cells[t])} it={self.last_it}")); continue
@@ -128,7 +136,7 @@ class Router:
     def _stub_all(self, cells, pad, c, n):
         pass
 
-    def _astar(self, tree, targets, pad, passb, vr, tht):
+    def _astar(self, tree, targets, pad, passb, vr, tht, bias=(1.0, 1.0)):
         ny, nx = self.ny, self.nx
         tx, ty = pad["x"] / G, pad["y"] / G
         def h(j, i):
@@ -140,7 +148,7 @@ class Router:
             if passb[l][j * nx + i]:
                 best[node] = 0.0; heapq.heappush(heap, (h(j, i), 0.0, node))
         moves = ((1, 0, 1.0), (-1, 0, 1.0), (0, 1, 1.0), (0, -1, 1.0), (1, 1, 1.5), (1, -1, 1.5), (-1, 1, 1.5), (-1, -1, 1.5))
-        limit = 1500000; it = 0; self.last_it = 0
+        limit = 500000; it = 0; self.last_it = 0
         while heap:
             f, gc, node = heapq.heappop(heap)
             if gc > best.get(node, 1e18): continue
@@ -150,12 +158,12 @@ class Router:
                 return path[::-1]
             it += 1; self.last_it = it
             if it > limit: return None
-            l, j, i = node; pb = passb[l]
+            l, j, i = node; pb = passb[l]; lb = bias[l]
             for di, dj, cost in moves:
                 i2, j2 = i + di, j + dj
                 if i2 < 0 or j2 < 0 or i2 >= nx or j2 >= ny or not pb[j2 * nx + i2]: continue
                 if di and dj and not (pb[j * nx + i2] and pb[j2 * nx + i]): continue
-                nn = (l, j2, i2); ng = gc + cost
+                nn = (l, j2, i2); ng = gc + cost * lb
                 if ng < best.get(nn, 1e18):
                     best[nn] = ng; prev[nn] = node; heapq.heappush(heap, (ng + h(j2, i2), ng, nn))
             # смена слоя: бесплатно в своей сквозной площадке, иначе переходное отверстие

@@ -16,13 +16,14 @@ PCB = os.path.join(HERE, "pch1500.kicad_pcb")
 PRO = os.path.join(HERE, "pch1500.kicad_pro")
 W, H = 180.0, 150.0
 NOTCH = (34.0, 36.0)                 # вырез под диодный мост VD1 (левый верхний угол)
-BARRIER_X = 120.0                    # ось барьера изоляции
+BARRIER_X = 472 * 0.254            # ось барьера изоляции (119,888 мм — на сетке трассировки)
+GRID = 0.254
 
 # ---------------- классы цепей ----------------
 HVPWR = ["L_IN", "N_IN", "BR+", "DCP", "U_IPM", "U_OUT", "V_OUT", "W_OUT", "W_MOT", "BRK_C"]
-HVSIG = ["L_AUX", "X2D", "BLD", "LEDA", "LEDB", "VD_A", "VD_B", "BRK_D", "VSU", "VBU", "VSV", "VBV", "VSW", "VBW"]
+HVSIG = ["L_AUX", "X2D", "BLD", "VD_A", "VD_B", "BRK_D", "VSU", "VBU", "VSV", "VBV", "VSW", "VBW"]
 LVPWR = ["GNDH", "NSH", "SHM"]
-PWR5 = ["+5V", "GND", "+15VH", "+5VH", "+3V3", "K1P", "K1C", "K2C", "FAN_N", "PE"]
+PWR5 = ["+5V", "GND", "+15VH", "+5VH", "+3V3", "K1P", "K1C", "K2C", "FAN_N"]
 CLASSES = {  # имя: (зазор, ширина дорожки, диаметр/сверло перехода)
     "Default": (0.25, 0.4, 0.9, 0.5),
     "HVPWR": (2.0, 2.5, 1.6, 0.8),
@@ -33,50 +34,65 @@ CLASSES = {  # имя: (зазор, ширина дорожки, диаметр/
 
 # ---------------- размещение ----------------
 # крупные элементы: поз. обозначение -> (угол, x, y) — координаты левого верхнего угла габарита
+BX = BARRIER_X
 BIG = {
-    "J1": (270, 35.5, 2.0), "J2": (270, 35.5, 19.5), "J3": (270, 50.0, 2.0), "RT1": (0, 64.5, 2.5),
-    "K1": (0, 50.0, 15.5), "PS2": (0, 100.0, 2.3), "F1": (0, 56.0, 30.3),
-    "PS1": (270, 2.0, 38.0), "CX1": (90, 2.0, 82.0), "RV1": (90, 15.0, 82.0),
-    "R5": (90, 22.0, 82.0), "R6": (90, 28.5, 82.0), "R7": (0, 15.0, 101.5), "R8": (0, 15.0, 107.5), "HL1": (90, 5.0, 111.0),
-    "J4": (0, 2.5, 137.0), "VT2": (0, 17.5, 142.0), "VD3": (0, 17.5, 134.0),
+    # сетевой вход и питание собственных нужд — верхняя полоса
+    "J1": (270, 35.5, 4.0), "J2": (270, 35.5, 19.5), "PS1": (0, 50.0, 2.0), "F1": (0, 50.0, 29.8), "RV1": (0, 74.0, 30.0),
+    "CX1": (90, 93.3, 2.0), "PS2": (0, 100.0, 2.3),
+    # вход шины постоянного тока, предзаряд — левая колонка
+    "J3": (0, 2.0, 38.0), "RT1": (0, 16.5, 39.0), "K1": (0, 2.0, 52.0),
+    "R5": (90, 22.0, 80.0), "R6": (90, 28.5, 80.0), "HL1": (90, 2.5, 82.0),
+    "J4": (0, 2.5, 124.0),
     "K2": (0, 157.0, 108.5), "J11": (270, 169.0, 91.0), "J9": (0, 125.0, 137.5), "J10": (0, 142.5, 137.5), "J6": (0, 160.0, 137.5),
-    "J7": (270, 175.5, 3.0), "J8": (270, 175.5, 15.5), "J12": (270, 170.5, 3.0), "J13": (270, 170.5, 10.5),
+    "J7": (0, 176.0, 3.0), "J8": (0, 176.0, 15.5), "J12": (0, 171.0, 3.0), "J13": (0, 171.0, 10.5),
 }
-# элементы с заданным положением первого вывода (угол, x, y)
+# элементы с заданным положением первого вывода (угол, x, y); NOSNAP — не привязывать к сетке
+NOSNAP = {"U1", "C6", "C7", "C8"}
 PIN1 = {
     "C1": (0, 47.0, 52.0), "C2": (0, 47.0, 84.0), "C3": (0, 47.0, 116.0),
     "U1": (0, 88.0, 111.0),                      # начало координат посадочного места — центр корпуса
-    "C4": (0, 76.2, 129.5), "J5": (0, 82.0, 142.5),
+    "C4": (0, 76.2, 129.5), "J5": (0, 97.0, 142.5),
     "R9": (90, 103.5, 130.0), "R10": (90, 109.0, 130.0),
-    "U4": (180, 123.81, 46.6), "U5": (180, 123.81, 58.0), "U6": (180, 123.81, 69.4),
-    "U17": (180, 123.81, 77.5), "U11": (0, 116.19, 88.0), "U13": (0, 116.19, 96.0),
-    "U14": (0, 120.0, 114.0), "U15": (0, 120.0, 124.0),
+    "U4": (180, BX + 3.81, 46.6), "U5": (180, BX + 3.81, 58.0), "U6": (180, BX + 3.81, 69.4),
+    "U17": (180, BX + 3.81, 77.5), "U11": (0, BX - 3.81, 88.0), "U13": (0, BX - 3.81, 96.0),
+    "U14": (0, BX, 114.0), "U15": (0, BX, 124.0),
     "R13": (0, 127.0, 46.6), "R14": (0, 127.0, 38.98), "R15": (0, 127.0, 58.0), "R16": (0, 127.0, 50.38),
     "R17": (0, 127.0, 69.4), "R18": (0, 127.0, 61.78), "R4": (0, 127.0, 77.5),
     "A2": (0, 158.0, 40.0),
-    "C6": (90, 73.2, 91.5), "C7": (90, 79.4, 91.5), "C8": (90, 85.6, 91.5),
-    "U3": (0, 98.0, 48.0), "U18": (0, 98.0, 70.0), "U10": (0, 3.6, 120.6),
+    # бутстрепные конденсаторы: «минус» строго над выводом VS, дорожки VB проходят между выводами модуля
+    "C6": (180, 74.9, 90.0), "C7": (180, 80.3, 84.0), "C8": (180, 85.3, 90.0),
+    "U3": (0, 95.5, 50.5), "U18": (0, 96.0, 70.5), "U10": (0, 3.6, 108.0),
+    # высоковольтные делители и тормозной ключ: расстояния между площадками разных цепей не менее 3 мм
+    "R42": (0, 16.0, 146.0), "R43": (0, 24.5, 146.0), "R44": (0, 33.0, 146.0),
+    "R19": (0, 107.5, 44.06), "R20": (0, 107.5, 41.52), "R21": (0, 107.5, 55.46), "R22": (0, 107.5, 52.92),
+    "R23": (0, 107.5, 66.86), "R24": (0, 107.5, 64.32),
+    "R35": (0, 17.0, 104.5), "R36": (0, 27.0, 104.5),
+    "VT2": (0, 21.5, 131.0), "VD3": (90, 37.0, 133.0),
+    "R40": (90, 17.5, 135.0), "R1": (90, 93.0, 35.0), "R2": (270, 97.5, 29.92), "R7": (0, 11.5, 85.0),
 }
 # мелкие элементы: области автоматической раскладки (x0, y0, x1, y1, угол, [позиции])
 PACK = [
-    (82.0, 15.0, 99.5, 36.0, 0, ["R72", "VT1", "VD2", "R70", "R71"]),
-    (68.0, 37.0, 96.5, 46.0, 0, ["U2", "C15", "C16", "C12", "C13"]),
-    (67.5, 46.5, 96.5, 62.0, 0, ["R19", "R20", "C18", "R21", "R22", "C19", "R23", "R24", "C20", "R25", "R26", "R27", "R28", "R29", "R30"]),
-    (67.5, 62.0, 96.5, 86.0, 0, ["C46", "C47", "C48", "C49", "C50", "C51", "C17", "C52", "R12", "C14", "R11", "C5", "R31", "R32", "R33",
-                                  "C9", "C10", "C11"]),
-    (106.5, 66.0, 114.6, 108.0, 0, ["R42", "R43", "R44", "R45", "C24", "C25"]),
-    (13.5, 118.5, 37.6, 133.9, 0, ["C30", "U12", "R41", "R35", "R36", "R37", "R55", "R38", "C31", "R39", "R40"]),
-    (21.0, 113.4, 37.5, 117.6, 0, ["R1", "R2"]),
+    (2.0, 67.5, 34.5, 78.5, 0, ["VT1", "R70", "R71", "R72", "VD2"]),
+    (67.0, 39.5, 94.0, 48.4, 0, ["U2", "C15", "C16"]), (97.0, 39.3, 106.5, 48.2, 0, ["C12"]),
+    (67.5, 48.6, 93.6, 60.0, 0, ["C18", "C19", "C20", "R25", "R26", "R27", "R28", "R29", "R30"]),
+    (67.5, 60.2, 93.6, 80.6, 0, ["C46", "C47", "C48", "C49", "C50", "C51", "C52", "R12", "C14", "R11", "C5", "R31", "R32", "R33"]),
+    (107.2, 71.5, 115.1, 79.5, 0, ["C13", "C17"]),
+    (106.5, 80.0, 114.6, 108.0, 0, ["R45", "C24", "C25"]),
+    (14.3, 109.0, 36.8, 126.6, 0, ["C30", "U12", "R41", "R37", "R55", "C31", "R38", "R39"]),
     (136.0, 36.0, 155.5, 108.0, 0, ["R34", "R46", "R47", "C42", "R48", "R49", "C43", "R56", "R57", "C40", "R58", "R59", "C41", "C26",
                                      "C37", "C36", "C39", "C38", "C28", "R52", "C45", "C27", "R50", "R51", "JP1", "C29", "R68"]),
     (125.0, 108.5, 156.6, 136.5, 0, ["R62", "R65", "C33", "R63", "R66", "C34", "R64", "R67", "C35", "U16", "C32", "R60", "JP2", "R61"]),
-    (156.8, 125.0, 180.0, 137.4, 0, ["VD4", "VT3", "VT4", "VD5", "R53", "R54"]),
+    (156.8, 125.0, 180.0, 137.4, 0, ["VD4", "VT3", "VD5", "VT4"]),
+    (146.0, 96.0, 156.5, 108.0, 0, ["R53", "R54"]),
 ]
 SLOTS = [  # фрезерованные прорези под элементами барьера (x, y0, y1), ширина 1,2 мм
     (BARRIER_X, 37.5, 48.0), (BARRIER_X, 49.0, 59.4), (BARRIER_X, 60.4, 70.8), (BARRIER_X, 73.5, 78.9),
     (BARRIER_X, 86.6, 91.9), (BARRIER_X, 94.6, 105.0), (BARRIER_X, 111.0, 117.0), (BARRIER_X, 121.0, 127.0),
 ]
-HOLES = [(38.0, 146.0), (176.0, 146.5), (176.0, 34.0), (31.5, 60.0), (113.0, 146.0), (97.5, 33.5)]   # крепёжные отверстия 3,2 мм
+HOLES = [(4.5, 145.0), (46.0, 146.2), (114.0, 146.6), (176.0, 146.5), (176.0, 34.0), (41.0, 33.4)]   # крепёжные отверстия 3,2 мм
+
+
+def snap(v): return round(v / GRID) * GRID
 
 
 def load_fp(c):
@@ -154,11 +170,12 @@ def place():
     def put_tl(ref, rot, x, y):
         fp = fps[ref]; fp.SetPosition(VECTOR2I(0, 0)); fp.SetOrientationDegrees(rot)
         l, t, r, b = bbox(fp)
-        fp.SetPosition(VECTOR2I(FromMM(x - l), FromMM(y - t))); placed.add(ref)
+        fp.SetPosition(VECTOR2I(FromMM(snap(x - l)), FromMM(snap(y - t)))); placed.add(ref)
         return r - l, b - t
 
     for ref, (rot, x, y) in BIG.items(): put_tl(ref, rot, x, y)
     for ref, (rot, x, y) in PIN1.items():
+        if ref not in NOSNAP: x, y = snap(x), snap(y)
         fps[ref].SetOrientationDegrees(rot); fps[ref].SetPosition(VECTOR2I(FromMM(x), FromMM(y))); placed.add(ref)
     for x0, y0, x1, y1, rot, refs in PACK:
         x, y, rowh = x0, y0, 0.0
@@ -180,7 +197,8 @@ def place():
         fp.SetReference(f"H{HOLES.index((x, y)) + 1}"); fp.Reference().SetVisible(False); fp.Value().SetVisible(False)
         fp.SetPosition(VECTOR2I(FromMM(x), FromMM(y))); board.Add(fp)
     # запретная зона трассировки в зазоре барьера изоляции
-    for (x0, y0, x1, y1) in ((BARRIER_X - 2.9, 34.5, BARRIER_X + 2.9, H), (108.5, 0.0, 142.0, 34.5)):
+    for (x0, y0, x1, y1) in ((BARRIER_X - 2.9, 34.5, BARRIER_X + 2.9, 108.0), (BARRIER_X - 1.35, 108.0, BARRIER_X + 1.35, 130.0),
+                             (BARRIER_X - 2.9, 130.0, BARRIER_X + 2.9, H), (108.5, 0.0, 142.0, 34.5)):
         z = pcbnew.ZONE(board); z.SetIsRuleArea(True); z.SetDoNotAllowTracks(True); z.SetDoNotAllowVias(True); z.SetDoNotAllowCopperPour(True)
         z.SetDoNotAllowPads(False); z.SetDoNotAllowFootprints(False)
         ls = pcbnew.LSET(); ls.AddLayer(pcbnew.F_Cu); ls.AddLayer(pcbnew.B_Cu); z.SetLayerSet(ls)
@@ -229,8 +247,8 @@ def fix_dsn(path):
 
 # ---------------- трассировка ----------------
 MAINS = ["L_IN", "N_IN", "L_AUX", "X2D"]
-HV = ["BR+", "DCP", "U_IPM", "U_OUT", "V_OUT", "W_OUT", "W_MOT", "BRK_C", "BLD", "LEDA", "LEDB", "VD_A", "VD_B", "BRK_D",
-      "VSU", "VBU", "VSV", "VBV", "VSW", "VBW", "PE"]
+HV = ["BR+", "DCP", "U_IPM", "U_OUT", "V_OUT", "W_OUT", "W_MOT", "BRK_C", "BLD", "VD_A", "VD_B", "BRK_D",
+      "VSU", "VBU", "VSV", "VBV", "VSW", "VBW"]
 LV = ["GNDH", "NSH", "SHM"]
 P5 = ["+5V", "GND", "+15VH", "+5VH", "+3V3", "K1P", "K1C", "K2C", "FAN_N"]
 GROUP = {"VBU": "BSU", "VSU": "BSU", "VBV": "BSV", "VSV": "BSV", "VBW": "BSW", "VSW": "BSW",
@@ -246,20 +264,27 @@ def via_for(w):
 
 
 # задания трассировки по порядку: (цепь, ширина, [выводы] или None — все оставшиеся)
+TOP, BOT = (1.0, 3.0), (3.0, 1.0)
 JOBS = [
-    ("L_IN", 3.0, ["J1.1", "J2.1"]), ("N_IN", 3.0, ["J1.2", "J2.2"]), ("BR+", 3.0, ["J3.1", "RT1.1", "K1.11"]),
-    ("DCP", 3.0, ["RT1.2", "K1.14", "C1.1", "C2.1", "C3.1", "U1.23", "C4.1"]),
-    ("GNDH", 3.0, ["J3.2", "C1.2", "C2.2", "C3.2", "R10.2"]),
-    ("NSH", 2.5, ["U1.19", "U1.18", "U1.17", "R9.1", "C4.2"]), ("SHM", 2.5, None),
-    ("U_IPM", 1.8, ["U1.22", "U14.1"]), ("U_OUT", 1.8, ["U14.4", "J5.1"]), ("V_OUT", 1.8, None),
-    ("W_OUT", 1.8, ["U1.20", "U15.1"]), ("W_MOT", 1.8, ["U15.4", "J5.3"]), ("PE", 1.8, None),
+    ("L_IN", 2.0, ["J1.1", "J2.1"]), ("N_IN", 2.0, ["J1.2", "J2.2"]), ("BR+", 2.0, ["J3.1", "RT1.1", "K1.11"]),
+    ("DCP", 2.0, ["RT1.2", "K1.14", "C1.1"], TOP), ("DCP", 2.4, ["C1.1", "C2.1", "C3.1", "U1.23", "C4.1"], TOP),
+    ("GNDH", 3.0, ["J3.2", "C1.2", "C2.2", "C3.2"], BOT), ("GNDH", 3.0, ["C3.2", "R10.2"], TOP),
+    ("NSH", 2.4, ["U1.19", "U1.18", "U1.17", "R9.1", "C4.2"], TOP), ("SHM", 2.4, None, TOP),
+    ("U_IPM", 1.8, ["U1.22", "U14.1"], BOT), ("W_OUT", 1.8, ["U1.20", "U15.1"], BOT), ("V_OUT", 1.8, None, BOT),
+    ("U_OUT", 1.8, ["U14.4", "J5.1"]), ("W_MOT", 1.8, ["U15.4", "J5.3"]),
     ("BRK_C", 1.5, None), ("DCP", 1.5, ["C3.1", "J4.1", "VD3.1"]),
-    ("VBU", 0.6, None), ("VSU", 0.6, None), ("VBV", 0.6, None), ("VSV", 0.6, None), ("VBW", 0.6, None), ("VSW", 0.6, None),
     ("L_IN", 1.0, None), ("N_IN", 1.0, None), ("L_AUX", 0.6, None), ("X2D", 0.6, None),
-    ("DCP", 0.6, None), ("BLD", 0.6, None), ("LEDA", 0.6, None), ("LEDB", 0.6, None), ("VD_A", 0.6, None), ("VD_B", 0.6, None), ("BRK_D", 0.6, None),
-    ("*", 0.4, None),
-    ("+15VH", 0.8, None), ("+5VH", 0.8, None), ("K1P", 0.8, None), ("K1C", 0.8, None), ("+3V3", 0.8, None), ("+5V", 0.8, None),
-    ("K2C", 0.8, None), ("FAN_N", 0.8, None), ("GNDH", 0.8, None), ("GND", 0.8, None),
+    ("DCP", 0.6, None), ("BLD", 0.6, None), ("VD_A", 0.6, None), ("VD_B", 0.6, None), ("BRK_D", 0.6, None),
+    ("+5VH", 0.6, None, BOT), ("+15VH", 0.6, None, BOT), ("+5V", 0.6, None, BOT), ("+3V3", 0.6, None, BOT),
+    ("K1P", 0.6, None, BOT), ("K1C", 0.6, None, BOT), ("K2C", 0.6, None, BOT), ("FAN_N", 0.6, None, BOT),
+    ("GNDH", 0.6, None, BOT), ("GND", 0.6, None, BOT),
+    ("*", 0.3, None, (1.0, 2.0)),
+]
+# дорожки, проложенные вручную (слой F.Cu): бутстрепные цепи у выводов модуля
+MANUAL = [
+    ("VSU", 0.6, [(72.9, 95.2), (72.9, 90.0)]), ("VBU", 0.4, [(74.9, 98.2), (74.9, 90.0)]),
+    ("VSV", 0.6, [(78.3, 95.2), (78.3, 84.0)]), ("VBV", 0.4, [(79.9, 98.2), (79.9, 86.0), (80.3, 85.6), (80.3, 84.0)]),
+    ("VSW", 0.6, [(83.3, 95.2), (83.3, 90.0)]), ("VBW", 0.4, [(84.9, 98.2), (84.9, 92.0), (85.3, 91.6), (85.3, 90.0)]),
 ]
 PRETIES = [("U14", "1", "2", "U_IPM"), ("U14", "3", "4", "U_OUT"), ("U15", "1", "2", "W_OUT"), ("U15", "3", "4", "W_MOT")]
 
@@ -270,79 +295,97 @@ def route():
     board = pcbnew.LoadBoard(PCB)
     for t in list(board.GetTracks()): board.Remove(t)
     allnets = sorted(N.nets())
-    special = {j[0] for j in JOBS if j[0] != "*"}
-    jobs = []
-    for name, w, pins in JOBS:
-        if name == "*": jobs += [(n, w, None) for n in allnets if n not in special]
-        else: jobs.append((name, w, pins))
-    classes = {}
-    for name, w, _ in jobs:
-        k = (net_cl(name), GROUP.get(name), w)
-        if k not in classes: classes[k] = JobClass(k[0], k[1], w, *via_for(w))
-    R = Router(W, H, list(classes.values()))
-    for n in allnets: R.net(n, net_cl(n), GROUP.get(n))
-    # край платы, вырез, прорези, отверстия, запретные зоны
-    nx, ny = NOTCH
-    R.stamp_rect(0, 0, nx, ny, 0, -1, (0, 1))
-    for (ax, ay, bx, by) in ((0, 0, W, 0), (W, 0, W, H), (W, H, 0, H), (0, H, 0, 0)):
-        for l in (0, 1): R.stamp_seg(ax, ay, bx, by, 0, -1, l)
-    for x, y0, y1 in SLOTS: R.stamp_rect(x - 0.6, y0, x + 0.6, y1, 0, -1, (0, 1))
-    for z in board.Zones():
-        if z.GetIsRuleArea():
-            b = z.GetBoundingBox()
-            R.stamp_rect(ToMM(b.GetLeft()), ToMM(b.GetTop()), ToMM(b.GetRight()), ToMM(b.GetBottom()), 0, -1, (0, 1), extra=0.0)
-    pads, anon = {}, 0
+    special = {j[0] for j in JOBS if j[0] != "*"} | {m[0] for m in MANUAL}
+    # геометрия площадок
+    padinfo, npth, anon = [], [], 0
     for fp in board.GetFootprints():
         for p in fp.Pads():
             pos = p.GetPosition(); x, y = ToMM(pos.x), ToMM(pos.y)
             if p.GetAttribute() == pcbnew.PAD_ATTRIB_NPTH:
-                R.stamp_rect(x, y, x, y, ToMM(p.GetDrillSize().x) / 2, -1, (0, 1)); continue
+                npth.append((x, y, ToMM(p.GetDrillSize().x) / 2)); continue
             b = p.GetBoundingBox()
             d = dict(ref=f"{fp.GetReference()}.{p.GetNumber()}", x=x, y=y, rect=(ToMM(b.GetLeft()), ToMM(b.GetTop()), ToMM(b.GetRight()), ToMM(b.GetBottom())),
                      layers=(0, 1) if p.GetAttribute() == pcbnew.PAD_ATTRIB_PTH else (0,),
                      minsize=min(ToMM(p.GetSize().x), ToMM(p.GetSize().y)))
             if p.GetShape() == pcbnew.PAD_SHAPE_CIRCLE: d["round"] = ToMM(p.GetSize().x) / 2
             name = p.GetNetname()
-            if not name:
-                anon += 1; name = f"~nc{anon}"; R.net(name, 2.0 if fp.GetReference() == "U1" else 0.25)
-            d["net"] = name
-            pads.setdefault(name, []).append(d)
-            R.add_pad(d, R.netid[name])
+            if not name: anon += 1; name = f"~nc{anon}"; d["hv"] = fp.GetReference() == "DA1"
+            d["net"] = name; padinfo.append(d)
+    keep = []
+    for z in board.Zones():
+        if z.GetIsRuleArea():
+            b = z.GetBoundingBox(); keep.append((ToMM(b.GetLeft()), ToMM(b.GetTop()), ToMM(b.GetRight()), ToMM(b.GetBottom())))
+    pads = {}
+    for d in padinfo: pads.setdefault(d["net"], []).append(d)
     def find(name, spec):          # spec — «рабочее обозначение.вывод», например "J1.1"
         r, _, pn = spec.partition(".")
         return [p for p in pads[name] if p["ref"] == f"{N.new_ref(r)}.{pn}"]
-    # перемычки между сдвоенными выводами датчиков тока
-    for ref, a, b, name in PRETIES:
-        pa, pb = find(name, f"{ref}.{a}")[0], find(name, f"{ref}.{b}")[0]
-        R.add_track(pa["x"], pa["y"], pb["x"], pb["y"], 0.5, R.netid[name], 0)
-        R.tree.setdefault(R.netid[name], set())
     def hpwl(n):
         xs = [p["x"] for p in pads[n]]; ys = [p["y"] for p in pads[n]]
         return (max(xs) - min(xs)) + (max(ys) - min(ys))
-    star = [j for j in jobs if j[0] not in special]
-    star.sort(key=lambda j: hpwl(j[0]))
-    it = iter(star)
-    ordered = [next(it) if j[0] not in special else j for j in jobs]
-    t0 = time.time()
-    for name, w, pins in ordered:
-        if pins is None: pl = list(pads[name])
-        else: pl = [p for s in pins for p in find(name, s)]
-        if len(pl) < 1: continue
-        # площадки, уже связанные перемычкой с соседней
-        k = (net_cl(name), GROUP.get(name), w)
-        nf = R.route(name, k, pl, f"w={w}")
-        if nf: print(f"  не разведено: {name} ({nf} из {len(pl)})")
-    print(f"трассировка: {time.time() - t0:.0f} с, отрезков {len(R.segs)}, переходов {len(R.vias)}, неразведённых соединений {len(R.fail)}")
+
+    def run(priority):
+        """Один проход трассировки; цепи из priority прокладываются сразу после силовых."""
+        jobs, sig_bias = [], (1.0, 2.0)
+        for job in JOBS:
+            name, w, pins = job[:3]; bias = job[3] if len(job) > 3 else (1.0, 1.0)
+            if name == "*":
+                rest = sorted((n for n in allnets if n not in special and n not in priority), key=hpwl)
+                jobs += [(n, w, None, bias) for n in rest]; sig_bias = bias
+            else: jobs.append((name, w, pins, bias))
+        first_pwr = next(i for i, j in enumerate(jobs) if j[0] == "+5VH")
+        jobs[first_pwr:first_pwr] = [(n, 0.3, None, sig_bias) for n in priority if n not in special]
+        classes = {}
+        for name, w, _, _ in jobs:
+            k = (net_cl(name), GROUP.get(name), w)
+            if k not in classes: classes[k] = JobClass(k[0], k[1], w, *via_for(w))
+        R = Router(W, H, list(classes.values()))
+        for n in allnets: R.net(n, net_cl(n), GROUP.get(n))
+        nx, ny = NOTCH
+        R.stamp_rect(0, 0, nx, ny, 0, -1, (0, 1))
+        for (ax, ay, bx, by) in ((0, 0, W, 0), (W, 0, W, H), (W, H, 0, H), (0, H, 0, 0)):
+            for l in (0, 1): R.stamp_seg(ax, ay, bx, by, 0, -1, l)
+        for x, y0, y1 in SLOTS: R.stamp_rect(x - 0.6, y0, x + 0.6, y1, 0, -1, (0, 1))
+        for (x0, y0, x1, y1) in keep: R.stamp_rect(x0, y0, x1, y1, 0, -1, (0, 1), extra=0.0)
+        for x, y, r in npth: R.stamp_rect(x, y, x, y, r, -1, (0, 1))
+        for d in padinfo:
+            if d["net"].startswith("~nc"): R.net(d["net"], 2.0 if d.get("hv") else 0.25)
+            R.add_pad(d, R.netid[d["net"]])
+        for ref, a, b, name in PRETIES:
+            pa, pb = find(name, f"{ref}.{a}")[0], find(name, f"{ref}.{b}")[0]
+            R.add_track(pa["x"], pa["y"], pb["x"], pb["y"], 0.5, R.netid[name], 0)
+        for name, w, pts in MANUAL:
+            for (ax, ay), (bx, by) in zip(pts, pts[1:]): R.add_track(ax, ay, bx, by, w, R.netid[name], 0)
+        failed = []
+        for name, w, pins, bias in jobs:
+            pl = list(pads[name]) if pins is None else [p for sp in pins for p in find(name, sp)]
+            if not pl: continue
+            if R.route(name, (net_cl(name), GROUP.get(name), w), pl, f"w={w}", bias) and name not in failed: failed.append(name)
+        return R, failed
+
+    t0 = time.time(); priority, best = [], None
+    for npass in range(8):
+        R, failed = run(priority)
+        print(f"проход {npass + 1}: неразведённых соединений {len(R.fail)} ({', '.join(failed)}), {time.time() - t0:.0f} с", flush=True)
+        if best is None or len(R.fail) < len(best.fail): best = R
+        if not R.fail: break
+        new = [n for n in failed if n not in priority]
+        if not new: priority = failed + [n for n in priority if n not in failed]     # перестановка: самые трудные — первыми
+        else: priority = new + priority
+    R = best
+    print(f"итог: отрезков {len(R.segs)}, переходов {len(R.vias)}, неразведённых соединений {len(R.fail)}")
     for f in R.fail: print("   ", f)
+    names = {v: k for k, v in R.netid.items()}
     for ax, ay, bx, by, w, n, layer in R.segs:
         t = pcbnew.PCB_TRACK(board); t.SetStart(VECTOR2I(FromMM(ax), FromMM(ay))); t.SetEnd(VECTOR2I(FromMM(bx), FromMM(by)))
         t.SetWidth(FromMM(w)); t.SetLayer(pcbnew.F_Cu if layer == 0 else pcbnew.B_Cu)
-        t.SetNet(board.FindNet([k for k, v in R.netid.items() if v == n][0])); board.Add(t)
+        t.SetNet(board.FindNet(names[n])); board.Add(t)
     for x, y, d, dr, n in R.vias:
         v = pcbnew.PCB_VIA(board); v.SetPosition(VECTOR2I(FromMM(x), FromMM(y))); v.SetWidth(FromMM(d)); v.SetDrill(FromMM(dr))
         v.SetViaType(pcbnew.VIATYPE_THROUGH); v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
-        v.SetNet(board.FindNet([k for k, vv in R.netid.items() if vv == n][0])); board.Add(v)
+        v.SetNet(board.FindNet(names[n])); board.Add(v)
     pcbnew.SaveBoard(os.path.join(HERE, "pch1500_routed.kicad_pcb"), board)
+    return len(R.fail)
 
 
 if __name__ == "__main__":

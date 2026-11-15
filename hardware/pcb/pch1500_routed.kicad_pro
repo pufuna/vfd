@@ -330,14 +330,6 @@
       },
       {
         "netclass": "HVSIG",
-        "pattern": "LEDA"
-      },
-      {
-        "netclass": "HVSIG",
-        "pattern": "LEDB"
-      },
-      {
-        "netclass": "HVSIG",
         "pattern": "VD_A"
       },
       {
@@ -419,10 +411,6 @@
       {
         "netclass": "PWR5",
         "pattern": "FAN_N"
-      },
-      {
-        "netclass": "PWR5",
-        "pattern": "PE"
       }
     ]
   },
