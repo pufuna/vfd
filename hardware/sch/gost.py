@@ -228,12 +228,24 @@ class Sheet:
         self.text(x + w / 2, y - 1.2, title if title is not None else self._val(ref), 2.3, "middle")
         return self._reg(ref, out)
 
-    def relay(self, ref, x, y, coil, contacts, val=True):
+    def relay(self, ref, x, y, coil, val=True):
         """Реле: обмотка (прямоугольник) с выводами сверху/снизу. coil = (вывод сверху, вывод снизу)."""
         self.rect(x - 5, y - 3, 10, 6, 0.5); self.line(x, y - 7.5, x, y - 3); self.line(x, y + 3, x, y + 7.5)
         self.text(x + 6.5, y - 0.5, ref, 2.8)
         if val: self.text(x + 6.5, y + 3.0, self._val(ref), 2.3)
         return self._reg(ref, {coil[0]: (x, y - 7.5), coil[1]: (x, y + 7.5)})
+
+    def jumper(self, ref, x, y, o="h", val=True):
+        """Перемычка (два штыря с замыкателем)."""
+        a, b = self._two(ref, x, y, o, 7.5)
+        if o[0] == "h":
+            self.line(a[0], y, x - 2.5 if a[0] < x else x + 2.5, y); self.line(b[0], y, x + 2.5 if b[0] > x else x - 2.5, y)
+            self.circle(x - 2.5, y, 0.9, 0.4, "#fff"); self.circle(x + 2.5, y, 0.9, 0.4, "#fff"); self.line(x - 2.5, y - 2.2, x + 2.5, y - 2.2, 0.4, "1.2 0.8")
+        else:
+            self.line(x, a[1], x, y - 2.5 if a[1] < y else y + 2.5); self.line(x, b[1], x, y + 2.5 if b[1] > y else y - 2.5)
+            self.circle(x, y - 2.5, 0.9, 0.4, "#fff"); self.circle(x, y + 2.5, 0.9, 0.4, "#fff"); self.line(x - 2.2, y - 2.5, x - 2.2, y + 2.5, 0.4, "1.2 0.8")
+        self._lbl(ref, x, y, o, off=3.6, val=val)
+        return self._reg(ref, {1: a, 2: b})
 
     def contact(self, ref, tag, x, y, com, no, nc=None):
         """Контакт реле (горизонтально): общий вывод слева, замыкающий справа (и размыкающий — справа ниже)."""

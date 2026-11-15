@@ -4,22 +4,24 @@
 part = "all";
 
 // ---- основные параметры (подгоняются под купленные изделия) ----
-W = 210; H = 170;            // наружные ширина и высота
+W = 210; H = 200;            // наружные ширина и высота
 wall = 3;
-base_d = 60;                 // внутренняя глубина основания (над задней стенкой)
+base_d = 62;                 // внутренняя глубина основания (над задней стенкой)
 lid_d = 22;                  // внутренняя глубина крышки
-hs_w = 200; hs_h = 100;      // радиатор (плоская сторона прилегает к задней стенке снаружи)
+pcb_w = 180; pcb_h = 150;    // плата ПЧ1500.01.000
+pcb_top = 92;                // координата верхнего края платы (от центра корпуса)
+// радиатор 125x150 мм (плоская сторона прилегает к задней стенке снаружи); под ним — модуль DA1 и мост VD1
+hs_w = 125; hs_h = 150;
+hs_x = -33.5; hs_y = 20;     // центр радиатора
 hs_overlap = 5;              // перекрытие радиатора и стенки по периметру окна
-win_y = 19;                  // смещение центра окна/радиатора по вертикали
-pcb_w = 160; pcb_h = 110;    // плата A1
-pcb_x = -20;                 // смещение центра платы (справа на радиаторе остаётся место для моста VD1)
-pcb_hole_inset = 4;
-module_h = 5.6;              // высота корпуса модуля U1 от радиатора до нижней стороны платы — УТОЧНИТЬ ПО МОДУЛЮ
+module_h = 6.0;              // расстояние от радиатора до нижней стороны платы — ИЗМЕРИТЬ ПО УСТАНОВЛЕННОМУ МОДУЛЮ
 post_h = module_h - wall;    // высота стоек платы над внутренней поверхностью стенки
+// крепёжные отверстия платы (координаты платы: x вправо, y вниз от левого верхнего угла)
+pcb_holes = [[4.5, 145.0], [46.0, 146.2], [114.0, 146.6], [176.0, 146.5], [176.0, 34.0]];   // шестое (41; 33,4) — стойка М3 в радиатор
 lcd_win = [97.5, 40];        // окно ЖКИ 2004
 lcd_holes = [93, 55];        // крепёжные отверстия модуля ЖКИ
-lcd_y = 38;
-btn_y = -32; btn_pitch = 22; btn_d = 12.6;   // 5 кнопок 12x12 с круглыми колпачками
+lcd_y = 45;
+btn_y = -30; btn_pitch = 22; btn_d = 12.6;   // 5 кнопок 12x12 с круглыми колпачками
 pot_d = 7.4;                 // отверстие потенциометра
 leg_h = 50;                  // высота ножек (радиатор 25 мм + вентилятор 10 мм + зазор)
 $fn = 40;
@@ -39,9 +41,9 @@ module base() {
         }
         rbox(iw, ih, base_d + 1, 2);                                   // внутренний объём
         // окно под радиатор
-        translate([0, win_y, -wall - 1]) rbox(hs_w - 2 * hs_overlap, hs_h - 2 * hs_overlap, wall + 2, 2);
+        translate([hs_x, hs_y, -wall - 1]) rbox(hs_w - 2 * hs_overlap, hs_h - 2 * hs_overlap, wall + 2, 2);
         // винты М4 впотай крепления радиатора (в радиаторе нарезать резьбу М4)
-        for (sx = [-70, 0, 70], sy = [-1, 1]) translate([sx, win_y + sy * (hs_h / 2 - 2.5), -wall - 0.1]) {
+        for (sx = [-1, 1], sy = [-60, 0, 60]) translate([hs_x + sx * (hs_w / 2 - 2.5), hs_y + sy, -wall - 0.1]) {
             cylinder(d = 4.4, h = wall + 1); translate([0, 0, wall - 2.2]) cylinder(d1 = 4.4, d2 = 8.6, h = 2.4);
         }
         for (sx = [-1, 1], sy = [-1, 1]) translate([sx * 85, sy * (H / 2 + 9), -wall - 1]) cylinder(d = 4.6, h = wall + 2);
@@ -50,11 +52,11 @@ module base() {
         for (x = [50, 78]) translate([x, -H / 2, 32]) rotate([90, 0, 0]) cylinder(d = 12.7, h = 3 * wall, center = true);
         // вентиляционные щели: верхняя стенка и боковые стенки
         translate([0, H / 2, 32]) vents(40, 22, 8);
-        for (sx = [-1, 1]) translate([sx * W / 2, 10, 32]) rotate([0, 0, 90]) vents(40, 14, 8);
+        for (sx = [-1, 1]) translate([sx * W / 2, 10, 32]) rotate([0, 0, 90]) vents(40, 17, 8);
     }
     // стойки платы (саморез 2,9 мм)
-    for (sx = [-1, 1], sy = [-1, 1])
-        translate([pcb_x + sx * (pcb_w / 2 - pcb_hole_inset), win_y + sy * (pcb_h / 2 - pcb_hole_inset), 0])
+    for (p = pcb_holes)
+        translate([p[0] - pcb_w / 2, pcb_top - p[1], 0])
             difference() { cylinder(d = 8, h = post_h); translate([0, 0, -wall + 0.6]) cylinder(d = 2.5, h = post_h + wall); }
     // угловые бобышки под винты крышки (саморез 2,9 мм или втулка М3)
     for (sx = [-1, 1], sy = [-1, 1]) translate([sx * cx, sy * cy, 0])
@@ -100,6 +102,7 @@ else {
     color("#c8ccd0") base();
     color("#e9e2c8", 0.9) translate([0, 0, base_d + 30]) lid();
     color("#555") for (sx = [-1, 1], sy = [-1, 1]) translate([sx * 85, sy * (H / 2 + 6), -wall - leg_h]) leg();
-    color("#9aa0a6") translate([0, win_y, -wall - 25]) linear_extrude(25) square([hs_w, hs_h], center = true);       // радиатор
-    color("#2e7d32") translate([pcb_x, win_y, post_h]) linear_extrude(1.6) square([pcb_w, pcb_h], center = true);  // плата
+    color("#9aa0a6") translate([hs_x, hs_y, -wall - 25]) linear_extrude(25) square([hs_w, hs_h], center = true);   // радиатор
+    color("#2e7d32") translate([0, pcb_top - pcb_h / 2, post_h]) linear_extrude(1.6) difference() {                   // плата с вырезом под мост
+        square([pcb_w, pcb_h], center = true); translate([-pcb_w / 2 - 1, pcb_h / 2 - 36]) square([35, 37]); }
 }

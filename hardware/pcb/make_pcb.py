@@ -43,7 +43,7 @@ BIG = {
     "J3": (0, 2.0, 38.0), "RT1": (0, 16.5, 39.0), "K1": (0, 2.0, 52.0),
     "R5": (90, 22.0, 80.0), "R6": (90, 28.5, 80.0), "HL1": (90, 2.5, 82.0),
     "J4": (0, 2.5, 124.0),
-    "K2": (0, 157.0, 108.5), "J11": (270, 169.0, 91.0), "J9": (0, 125.0, 137.5), "J10": (0, 142.5, 137.5), "J6": (0, 160.0, 137.5),
+    "K2": (0, 157.0, 108.5), "J11": (270, 169.0, 91.0), "J9": (0, 127.0, 137.5), "J10": (0, 143.5, 137.5), "J6": (0, 160.0, 137.5),
     "J7": (0, 176.0, 3.0), "J8": (0, 176.0, 15.5), "J12": (0, 171.0, 3.0), "J13": (0, 171.0, 10.5),
 }
 # элементы с заданным положением первого вывода (угол, x, y); NOSNAP — не привязывать к сетке
@@ -56,8 +56,8 @@ PIN1 = {
     "U4": (180, BX + 3.81, 46.6), "U5": (180, BX + 3.81, 58.0), "U6": (180, BX + 3.81, 69.4),
     "U17": (180, BX + 3.81, 77.5), "U11": (0, BX - 3.81, 88.0), "U13": (0, BX - 3.81, 96.0),
     "U14": (0, BX, 114.0), "U15": (0, BX, 124.0),
-    "R13": (0, 127.0, 46.6), "R14": (0, 127.0, 38.98), "R15": (0, 127.0, 58.0), "R16": (0, 127.0, 50.38),
-    "R17": (0, 127.0, 69.4), "R18": (0, 127.0, 61.78), "R4": (0, 127.0, 77.5),
+    "R13": (0, 130.0, 46.6), "R14": (0, 130.0, 38.98), "R15": (0, 130.0, 58.0), "R16": (0, 130.0, 50.38),
+    "R17": (0, 130.0, 69.4), "R18": (0, 130.0, 61.78), "R4": (0, 130.0, 77.5),
     "A2": (0, 158.0, 40.0),
     # бутстрепные конденсаторы: «минус» строго над выводом VS, дорожки VB проходят между выводами модуля
     "C6": (180, 74.9, 90.0), "C7": (180, 80.3, 84.0), "C8": (180, 85.3, 90.0),
@@ -73,15 +73,15 @@ PIN1 = {
 # мелкие элементы: области автоматической раскладки (x0, y0, x1, y1, угол, [позиции])
 PACK = [
     (2.0, 67.5, 34.5, 78.5, 0, ["VT1", "R70", "R71", "R72", "VD2"]),
-    (67.0, 39.5, 94.0, 48.4, 0, ["U2", "C15", "C16"]), (97.0, 39.3, 106.5, 48.2, 0, ["C12"]),
+    (67.0, 39.5, 94.0, 48.4, 0, ["U2", "C15", "C16"]), (97.0, 39.0, 106.8, 48.6, 0, ["C12"]),
     (67.5, 48.6, 93.6, 60.0, 0, ["C18", "C19", "C20", "R25", "R26", "R27", "R28", "R29", "R30"]),
     (67.5, 60.2, 93.6, 80.6, 0, ["C46", "C47", "C48", "C49", "C50", "C51", "C52", "R12", "C14", "R11", "C5", "R31", "R32", "R33"]),
     (107.2, 71.5, 115.1, 79.5, 0, ["C13", "C17"]),
     (106.5, 80.0, 114.6, 108.0, 0, ["R45", "C24", "C25"]),
     (14.3, 109.0, 36.8, 126.6, 0, ["C30", "U12", "R41", "R37", "R55", "C31", "R38", "R39"]),
-    (136.0, 36.0, 155.5, 108.0, 0, ["R34", "R46", "R47", "C42", "R48", "R49", "C43", "R56", "R57", "C40", "R58", "R59", "C41", "C26",
+    (139.0, 36.0, 156.0, 108.0, 0, ["R34", "R46", "R47", "C42", "R48", "R49", "C43", "R56", "R57", "C40", "R58", "R59", "C41", "C26",
                                      "C37", "C36", "C39", "C38", "C28", "R52", "C45", "C27", "R50", "R51", "JP1", "C29", "R68"]),
-    (125.0, 108.5, 156.6, 136.5, 0, ["R62", "R65", "C33", "R63", "R66", "C34", "R64", "R67", "C35", "U16", "C32", "R60", "JP2", "R61"]),
+    (131.5, 108.5, 156.6, 136.5, 0, ["R62", "R65", "C33", "R63", "R66", "C34", "R64", "R67", "C35", "U16", "C32", "R60", "JP2", "R61"]),
     (156.8, 125.0, 180.0, 137.4, 0, ["VD4", "VT3", "VD5", "VT4"]),
     (146.0, 96.0, 156.5, 108.0, 0, ["R53", "R54"]),
 ]
@@ -275,6 +275,12 @@ JOBS = [
     ("BRK_C", 1.5, None), ("DCP", 1.5, ["C3.1", "J4.1", "VD3.1"]),
     ("L_IN", 1.0, None), ("N_IN", 1.0, None), ("L_AUX", 0.6, None), ("X2D", 0.6, None),
     ("DCP", 0.6, None), ("BLD", 0.6, None), ("VD_A", 0.6, None), ("VD_B", 0.6, None), ("BRK_D", 0.6, None),
+    # шины питания вдоль барьера изоляции прокладываются до сигнальных цепей
+    ("GND", 0.6, ["U4.2", "U4.3", "U5.2", "U5.3", "U6.2", "U6.3", "U17.2", "U11.3", "U13.5", "U14.5", "U15.5"], BOT),
+    ("+5V", 0.6, ["U13.8", "U14.8", "U15.8"], BOT),
+    ("GNDH", 0.6, ["U4.5", "U5.5", "U6.5", "U13.3", "U13.4"], BOT),
+    ("+5VH", 0.6, ["U4.8", "U5.8", "U6.8", "R19.1", "R20.1", "R21.1", "R22.1", "R23.1", "R24.1", "U13.1"], BOT),
+    ("!", 0.3, None, (1.0, 2.0)),
     ("+5VH", 0.6, None, BOT), ("+15VH", 0.6, None, BOT), ("+5V", 0.6, None, BOT), ("+3V3", 0.6, None, BOT),
     ("K1P", 0.6, None, BOT), ("K1C", 0.6, None, BOT), ("K2C", 0.6, None, BOT), ("FAN_N", 0.6, None, BOT),
     ("GNDH", 0.6, None, BOT), ("GND", 0.6, None, BOT),
@@ -295,7 +301,7 @@ def route():
     board = pcbnew.LoadBoard(PCB)
     for t in list(board.GetTracks()): board.Remove(t)
     allnets = sorted(N.nets())
-    special = {j[0] for j in JOBS if j[0] != "*"} | {m[0] for m in MANUAL}
+    special = {j[0] for j in JOBS if j[0] not in "*!"} | {m[0] for m in MANUAL}
     # геометрия площадок
     padinfo, npth, anon = [], [], 0
     for fp in board.GetFootprints():
@@ -323,57 +329,78 @@ def route():
     def hpwl(n):
         xs = [p["x"] for p in pads[n]]; ys = [p["y"] for p in pads[n]]
         return (max(xs) - min(xs)) + (max(ys) - min(ys))
+    names_of = {}
 
-    def run(priority):
-        """Один проход трассировки; цепи из priority прокладываются сразу после силовых."""
-        jobs, sig_bias = [], (1.0, 2.0)
-        for job in JOBS:
-            name, w, pins = job[:3]; bias = job[3] if len(job) > 3 else (1.0, 1.0)
-            if name == "*":
-                rest = sorted((n for n in allnets if n not in special and n not in priority), key=hpwl)
-                jobs += [(n, w, None, bias) for n in rest]; sig_bias = bias
-            else: jobs.append((name, w, pins, bias))
-        first_pwr = next(i for i, j in enumerate(jobs) if j[0] == "+5VH")
-        jobs[first_pwr:first_pwr] = [(n, 0.3, None, sig_bias) for n in priority if n not in special]
-        classes = {}
-        for name, w, _, _ in jobs:
-            k = (net_cl(name), GROUP.get(name), w)
-            if k not in classes: classes[k] = JobClass(k[0], k[1], w, *via_for(w))
-        R = Router(W, H, list(classes.values()))
-        for n in allnets: R.net(n, net_cl(n), GROUP.get(n))
-        nx, ny = NOTCH
-        R.stamp_rect(0, 0, nx, ny, 0, -1, (0, 1))
-        for (ax, ay, bx, by) in ((0, 0, W, 0), (W, 0, W, H), (W, H, 0, H), (0, H, 0, 0)):
-            for l in (0, 1): R.stamp_seg(ax, ay, bx, by, 0, -1, l)
-        for x, y0, y1 in SLOTS: R.stamp_rect(x - 0.6, y0, x + 0.6, y1, 0, -1, (0, 1))
-        for (x0, y0, x1, y1) in keep: R.stamp_rect(x0, y0, x1, y1, 0, -1, (0, 1), extra=0.0)
-        for x, y, r in npth: R.stamp_rect(x, y, x, y, r, -1, (0, 1))
-        for d in padinfo:
-            if d["net"].startswith("~nc"): R.net(d["net"], 2.0 if d.get("hv") else 0.25)
-            R.add_pad(d, R.netid[d["net"]])
-        for ref, a, b, name in PRETIES:
-            pa, pb = find(name, f"{ref}.{a}")[0], find(name, f"{ref}.{b}")[0]
-            R.add_track(pa["x"], pa["y"], pb["x"], pb["y"], 0.5, R.netid[name], 0)
-        for name, w, pts in MANUAL:
-            for (ax, ay), (bx, by) in zip(pts, pts[1:]): R.add_track(ax, ay, bx, by, w, R.netid[name], 0)
-        failed = []
-        for name, w, pins, bias in jobs:
-            pl = list(pads[name]) if pins is None else [p for sp in pins for p in find(name, sp)]
+    # задания: силовые (неснимаемые) и остальные (допускают снятие и повторную прокладку)
+    hard, soft = [], []
+    seen_mark = False
+    for job in JOBS:
+        name, w, pins = job[:3]; bias = job[3] if len(job) > 3 else (1.0, 1.0)
+        if name == "!": seen_mark = True; continue
+        if name == "*":
+            soft += [(n, w, None, bias) for n in sorted((n for n in allnets if n not in special), key=hpwl)]
+        elif net_cl(name) >= 2.0 or name in LV or w >= 1.5: hard.append((name, w, pins, bias))
+        else: soft.append((name, w, pins, bias))
+    classes = {}
+    for name, w, _, _ in hard + soft:
+        k = (net_cl(name), GROUP.get(name), w)
+        if k not in classes: classes[k] = JobClass(k[0], k[1], w, *via_for(w))
+    R = Router(W, H, list(classes.values()))
+    for n in allnets: names_of[R.net(n, net_cl(n), GROUP.get(n))] = n
+    nx, ny = NOTCH
+    R.stamp_rect(0, 0, nx, ny, 0, -1, (0, 1))
+    for (ax, ay, bx, by) in ((0, 0, W, 0), (W, 0, W, H), (W, H, 0, H), (0, H, 0, 0)):
+        for l in (0, 1): R.stamp_seg(ax, ay, bx, by, 0, -1, l)
+    for x, y0, y1 in SLOTS: R.stamp_rect(x - 0.6, y0, x + 0.6, y1, 0, -1, (0, 1))
+    for (x0, y0, x1, y1) in keep: R.stamp_rect(x0, y0, x1, y1, 0, -1, (0, 1), extra=0.0)
+    for x, y, r in npth: R.stamp_rect(x, y, x, y, r, -1, (0, 1))
+    for d in padinfo:
+        if d["net"].startswith("~nc"): R.net(d["net"], 2.0 if d.get("hv") else 0.25)
+        R.add_pad(d, R.netid[d["net"]])
+    for ref, a, b, name in PRETIES:
+        pa, pb = find(name, f"{ref}.{a}")[0], find(name, f"{ref}.{b}")[0]
+        R.add_track(pa["x"], pa["y"], pb["x"], pb["y"], 0.5, R.netid[name], 0)
+    for name, w, pts in MANUAL:
+        for (ax, ay), (bx, by) in zip(pts, pts[1:]): R.add_track(ax, ay, bx, by, w, R.netid[name], 0)
+    def padlist(name, pins): return list(pads[name]) if pins is None else [p for sp in pins for p in find(name, sp)]
+    t0 = time.time()
+    for name, w, pins, bias in hard:
+        pl = padlist(name, pins)
+        if pl and R.route(name, (net_cl(name), GROUP.get(name), w), pl, f"w={w}", bias): print("  силовая цепь не разведена:", name)
+    R.snapshot()
+    print(f"силовые цепи: {time.time() - t0:.0f} с, неразведённых {len(R.fail)}", flush=True)
+    hard_fail = list(R.fail)
+    # очередь остальных цепей с rip-up
+    from collections import deque
+    jobs_of = {}
+    for j in soft: jobs_of.setdefault(j[0], []).append(j)
+    queue = deque(dict.fromkeys(j[0] for j in soft)); ripped = {}; nrip = 0
+    while queue:
+        name = queue.popleft()
+        for (_, w, pins, bias) in jobs_of[name]:
+            key = (net_cl(name), GROUP.get(name), w); pl = padlist(name, pins)
             if not pl: continue
-            if R.route(name, (net_cl(name), GROUP.get(name), w), pl, f"w={w}", bias) and name not in failed: failed.append(name)
-        return R, failed
-
-    t0 = time.time(); priority, best = [], None
-    for npass in range(8):
-        R, failed = run(priority)
-        print(f"проход {npass + 1}: неразведённых соединений {len(R.fail)} ({', '.join(failed)}), {time.time() - t0:.0f} с", flush=True)
-        if best is None or len(R.fail) < len(best.fail): best = R
-        if not R.fail: break
-        new = [n for n in failed if n not in priority]
-        if not new: priority = failed + [n for n in priority if n not in failed]     # перестановка: самые трудные — первыми
-        else: priority = new + priority
-    R = best
-    print(f"итог: отрезков {len(R.segs)}, переходов {len(R.vias)}, неразведённых соединений {len(R.fail)}")
+            R.fail = [f for f in R.fail if f[0] != name]
+            if not R.route(name, key, pl, f"w={w}", bias): continue
+            # не вышло: найти мешающие цепи по пути, проложенному без учёта снимаемых дорожек
+            if nrip >= 600 or ripped.get(name, 0) >= 10: continue
+            n = R.netid[name]; tree = R.tree.get(n, set())
+            todo = [p for p in pl if not any(cc in tree for cc in R.pad_cells(p))]
+            block = set()
+            for p in todo:
+                path = R.probe(name, key, p, bias)
+                if path: block |= R.blockers(path, name, key)
+            block = {m for m in block if names_of[m] in jobs_of and ripped.get(names_of[m], 0) < 10}
+            if not block: continue
+            nrip += 1; ripped[name] = ripped.get(name, 0) + 1
+            R.rip(block | {n})
+            for m in block:
+                ripped[names_of[m]] = ripped.get(names_of[m], 0) + 1
+                if names_of[m] not in queue: queue.append(names_of[m])
+            queue.appendleft(name)                      # текущую цепь — заново и первой
+            break
+    R.fail = hard_fail + [f for f in R.fail if f not in hard_fail]
+    print(f"итог: {time.time() - t0:.0f} с, снятий {nrip}, отрезков {len(R.segs)}, переходов {len(R.vias)}, неразведённых соединений {len(R.fail)}")
     for f in R.fail: print("   ", f)
     names = {v: k for k, v in R.netid.items()}
     for ax, ay, bx, by, w, n, layer in R.segs:
@@ -388,5 +415,88 @@ def route():
     return len(R.fail)
 
 
+# ---------------- завершение: полигоны, правила, DRC, выходные файлы ----------------
+FINAL = os.path.join(HERE, "pch1500_a1.kicad_pcb")
+
+
+def iso_nets(board):
+    """Цепи изолированной стороны — все, у которых есть площадка правее барьера."""
+    out = set()
+    for fp in board.GetFootprints():
+        for p in fp.Pads():
+            if p.GetNetname() and ToMM(p.GetPosition().x) > BARRIER_X + 1.0 and not (ToMM(p.GetPosition().y) < 34 and ToMM(p.GetPosition().x) < 110):
+                out.add(p.GetNetname())
+    return out
+
+
+def write_final_project(board):
+    def cls(name, c, w):
+        return {"name": name, "clearance": c, "track_width": w, "via_diameter": 0.9, "via_drill": 0.5, "bus_width": 12, "wire_width": 6,
+                "diff_pair_gap": 0.25, "diff_pair_via_gap": 0.25, "diff_pair_width": 0.2, "line_style": 0,
+                "microvia_diameter": 0.3, "microvia_drill": 0.1, "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)"}
+    iso = iso_nets(board)
+    pats = [{"netclass": k, "pattern": n} for k, lst in (("MAINS", MAINS), ("HV", HV), ("LV", LV)) for n in lst]
+    pats += [{"netclass": "P5", "pattern": n} for n in P5 if n not in iso] + [{"netclass": "ISO", "pattern": n} for n in sorted(iso)]
+    pro = {"board": {"design_settings": {"defaults": {}, "rules": {"min_clearance": 0.2, "min_track_width": 0.25, "min_via_diameter": 0.6,
+            "min_via_annular_width": 0.15, "min_through_hole_diameter": 0.3, "min_hole_to_hole": 0.25, "min_copper_edge_clearance": 0.3,
+            "min_hole_clearance": 0.2, "solder_mask_to_copper_clearance": 0.0, "min_silk_clearance": 0.0},
+            "rule_severities": {k: "ignore" for k in ("silk_overlap", "silk_over_copper", "silk_edge_clearance", "courtyards_overlap", "lib_footprint_issues",
+                                "lib_footprint_mismatch", "text_height", "text_thickness", "missing_courtyard", "npth_inside_courtyard", "pth_inside_courtyard",
+                                "solder_mask_bridge", "footprint_type_mismatch", "isolated_copper", "starved_thermal", "unresolved_variable", "extra_footprint",
+                                "missing_footprint", "duplicate_footprints", "net_conflict", "malformed_courtyard", "overlapping_pads", "silk_overlap")}}},
+           "net_settings": {"classes": [cls("Default", 0.25, 0.3), cls("P5", 0.3, 0.6), cls("LV", 0.4, 0.6), cls("HV", 2.0, 0.6), cls("MAINS", 2.5, 1.0), cls("ISO", 0.25, 0.3)],
+                            "meta": {"version": 3}, "net_colors": None, "netclass_assignments": None, "netclass_patterns": pats},
+           "meta": {"filename": "pch1500_a1.kicad_pro", "version": 1}}
+    json.dump(pro, open(FINAL.replace(".kicad_pcb", ".kicad_pro"), "w"), indent=1, ensure_ascii=False)
+    rules = ['(version 1)',
+             '# Барьер изоляции: медь изолированной стороны не ближе 2,9 мм к меди «горячей» стороны',
+             '# (минимум задают корпуса датчиков тока ACS712; у остальных элементов барьера — не менее 5,8 мм)',
+             '(rule "isolation_barrier" (condition "A.NetClass == \'ISO\' && B.NetClass != \'ISO\'") (constraint clearance (min 2.9mm)))']
+    for ph in "UVW":
+        rules.append(f'(rule "bootstrap_{ph}" (condition "A.NetName == \'VB{ph}\' && B.NetName == \'VS{ph}\'") (constraint clearance (min 0.4mm)))')
+    rules.append('(rule "current_sensor_U" (condition "A.NetName == \'U_IPM\' && B.NetName == \'U_OUT\'") (constraint clearance (min 0.3mm)))')
+    rules.append('(rule "current_sensor_W" (condition "A.NetName == \'W_OUT\' && B.NetName == \'W_MOT\'") (constraint clearance (min 0.3mm)))')
+    open(FINAL.replace(".kicad_pcb", ".kicad_dru"), "w", encoding="utf-8").write("\n".join(rules) + "\n")
+
+
+def add_zone(board, net, layer, pts, prio=0, clearance=0.4):
+    z = pcbnew.ZONE(board); z.SetNet(board.FindNet(net)); z.SetLayer(layer); z.SetAssignedPriority(prio)
+    z.SetLocalClearance(FromMM(clearance)); z.SetMinThickness(FromMM(0.3)); z.SetPadConnection(pcbnew.ZONE_CONNECTION_THERMAL)
+    z.SetThermalReliefGap(FromMM(0.4)); z.SetThermalReliefSpokeWidth(FromMM(0.6))
+    z.SetIslandRemovalMode(pcbnew.ISLAND_REMOVAL_MODE_ALWAYS)
+    o = z.Outline(); o.NewOutline()
+    for x, y in pts: o.Append(FromMM(x), FromMM(y))
+    board.Add(z); return z
+
+
+def finish():
+    import shutil, subprocess, re
+    routed = os.path.join(HERE, "pch1500_routed.kicad_pcb")
+    shutil.copy(routed, FINAL)
+    board = pcbnew.LoadBoard(FINAL)
+    write_final_project(board)
+    board = pcbnew.LoadBoard(FINAL)                       # перечитать с классами цепей и правилами
+    bx = BARRIER_X
+    for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
+        add_zone(board, "GND", layer, [(bx + 3.0, 35.0), (142.5, 35.0), (142.5, 0.6), (W - 0.6, 0.6), (W - 0.6, H - 0.6), (bx + 3.0, H - 0.6)], 0, 0.3)
+        add_zone(board, "GNDH", layer, [(0.6, 37.0), (bx - 3.0, 37.0), (bx - 3.0, H - 0.6), (0.6, H - 0.6)], 0, 0.4)
+    # усиление сильноточных цепей полигонами на слое F.Cu
+    add_zone(board, "DCP", pcbnew.F_Cu, [(26.0, 38.0), (50.5, 38.0), (50.5, 119.5), (79.5, 119.5), (79.5, 133.0), (38.5, 133.0), (38.5, 66.5), (26.0, 66.5)], 2, 2.0)
+    add_zone(board, "BR+", pcbnew.F_Cu, [(1.0, 37.5), (25.0, 37.5), (25.0, 66.5), (1.0, 66.5)], 2, 2.0)
+    add_zone(board, "L_IN", pcbnew.F_Cu, [(35.0, 0.6), (49.0, 0.6), (49.0, 14.0), (35.0, 14.0)], 2, 2.5)
+    add_zone(board, "NSH", pcbnew.F_Cu, [(92.0, 121.0), (107.0, 121.0), (107.0, 133.5), (92.0, 133.5)], 2, 0.4)
+    pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+    pcbnew.SaveBoard(FINAL, board)
+    write_final_project(board)
+    board = pcbnew.LoadBoard(FINAL)
+    rpt = os.path.join(HERE, "out", "drc_report.txt"); os.makedirs(os.path.dirname(rpt), exist_ok=True)
+    pcbnew.WriteDRCReport(board, rpt, pcbnew.EDA_UNITS_MILLIMETRES, True)
+    txt = open(rpt, encoding="utf-8", errors="replace").read()
+    viol = re.findall(r"^\[(\w+)\]", txt, re.M)
+    from collections import Counter
+    print("DRC:", dict(Counter(viol)))
+    for m in re.finditer(r"\*\* Found (\d+) (.*?) \*\*", txt): print("   ", m.group(1), m.group(2))
+
+
 if __name__ == "__main__":
-    {"place": place, "route": route}[sys.argv[1]]()
+    {"place": place, "route": route, "finish": finish}[sys.argv[1]]()

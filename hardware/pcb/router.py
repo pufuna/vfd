@@ -26,6 +26,7 @@ class Router:
         self.tht = {}                              # номер цепи -> множество (j, i) внутри своих сквозных площадок
         self.segs, self.vias, self.fail = [], [], []
         self.padcell = {}                          # номер цепи -> {узел: площадка}
+        self.halo = np.zeros((2, self.ny, self.nx), dtype=bool)   # окрестности площадок: проход дороже (чтобы не «запирать» выводы)
 
     def net(self, name, cl, grp=None):
         if name not in self.netid:
@@ -84,6 +85,9 @@ class Router:
         x0, y0, x1, y1 = pad["rect"]
         if pad.get("round"): self.stamp_rect(pad["x"], pad["y"], pad["x"], pad["y"], pad["round"], n, pad["layers"])
         else: self.stamp_rect(x0, y0, x1, y1, 0, n, pad["layers"])
+        i0, i1, j0, j1, X, Y = self._window(x0, y0, x1, y1, 1.1)
+        d = np.hypot(np.maximum(np.maximum(x0 - X, X - x1), 0), np.maximum(np.maximum(y0 - Y, Y - y1), 0))
+        for l in pad["layers"]: self.halo[l, j0:j1, i0:i1] |= (d <= 1.1)
         if n > 0:
             pc = self.padcell.setdefault(n, {})
             for cc in self.pad_cells(pad): pc[cc] = pad
@@ -100,6 +104,7 @@ class Router:
         ny, nx = self.ny, self.nx
         ok = ((g == 0) | (g == n))
         passb = [ok[0].tobytes(), ok[1].tobytes()]
+        self._halob = [self.halo[0].tobytes(), self.halo[1].tobytes()]
         vr = max(0, int(math.ceil((c.via_d - c.w) / 2 / G - 0.01)))
         tht = self.tht.get(n, set())
         tree = self.tree.setdefault(n, set())
@@ -158,12 +163,12 @@ class Router:
                 return path[::-1]
             it += 1; self.last_it = it
             if it > limit: return None
-            l, j, i = node; pb = passb[l]; lb = bias[l]
+            l, j, i = node; pb = passb[l]; lb = bias[l]; hb = self._halob[l]
             for di, dj, cost in moves:
                 i2, j2 = i + di, j + dj
                 if i2 < 0 or j2 < 0 or i2 >= nx or j2 >= ny or not pb[j2 * nx + i2]: continue
                 if di and dj and not (pb[j * nx + i2] and pb[j2 * nx + i]): continue
-                nn = (l, j2, i2); ng = gc + cost * lb
+                nn = (l, j2, i2); ng = gc + cost * lb * (3.0 if hb[j2 * nx + i2] else 1.0)
                 if ng < best.get(nn, 1e18):
                     best[nn] = ng; prev[nn] = node; heapq.heappush(heap, (ng + h(j2, i2), ng, nn))
             # смена слоя: бесплатно в своей сквозной площадке, иначе переходное отверстие
@@ -218,3 +223,67 @@ class Router:
         for l in pad["layers"]:
             if abs(i * G - pad["x"]) > 1e-6 or abs(j * G - pad["y"]) > 1e-6:
                 self.add_track(pad["x"], pad["y"], i * G, j * G, min(c.w, pad["minsize"]), n, l)
+
+
+# ---------------- снятие и повторная прокладка мешающих цепей (rip-up) ----------------
+def _snapshot(self):
+    """Запомнить состояние после прокладки неснимаемых (силовых) цепей."""
+    self.fix = {k: g.copy() for k, g in self.grid.items()}
+    self.fix_nseg, self.fix_nvia = len(self.segs), len(self.vias)
+    self.fix_tree = {n: set(t) for n, t in self.tree.items()}
+
+
+def _rip(self, nets):
+    """Снять все дорожки указанных цепей, проложенные после snapshot, и восстановить карты занятости."""
+    nets = set(nets)
+    keep_s = self.segs[:self.fix_nseg] + [sg for sg in self.segs[self.fix_nseg:] if sg[5] not in nets]
+    keep_v = self.vias[:self.fix_nvia] + [v for v in self.vias[self.fix_nvia:] if v[4] not in nets]
+    for k in self.grid: self.grid[k][...] = self.fix[k]
+    redo_s, redo_v = keep_s[self.fix_nseg:], keep_v[self.fix_nvia:]
+    self.segs, self.vias = keep_s[:self.fix_nseg], keep_v[:self.fix_nvia]
+    for (ax, ay, bx, by, w, n, layer) in redo_s: self.add_track(ax, ay, bx, by, w, n, layer)
+    for (x, y, d, dr, n) in redo_v:
+        self.vias.append((x, y, d, dr, n)); self.stamp_rect(x, y, x, y, d / 2, n, (0, 1))
+    for n in nets: self.tree[n] = set(self.fix_tree.get(n, set()))
+    self.fail = [f for f in self.fail if self.netid[f[0]] not in nets]
+
+
+def _probe(self, name, key, pad, bias=(1.0, 1.0)):
+    """Путь от дерева цепи до площадки с учётом только неснимаемых препятствий."""
+    n = self.netid[name]; c = self.cls[key]; g = self.fix[key]; nx = self.nx
+    ok = ((g == 0) | (g == n)); passb = [ok[0].tobytes(), ok[1].tobytes()]
+    self._halob = [self.halo[0].tobytes(), self.halo[1].tobytes()]
+    vr = max(0, int(math.ceil((c.via_d - c.w) / 2 / G - 0.01)))
+    tree = self.tree.get(n) or self.pad_cells(pad)
+    targets = {cc for cc in self.pad_cells(pad) if passb[cc[0]][cc[1] * nx + cc[2]]}
+    return self._astar(tree, targets, pad, passb, vr, self.tht.get(n, set()), bias) if targets else None
+
+
+def _blockers(self, path, name, key):
+    """Цепи, дорожки которых мешают пройти по пути path."""
+    n = self.netid[name]; c = self.cls[key]; g = self.grid[key]; out = set()
+    pts = [(l, j, i) for (l, j, i) in path if g[l, j, i] not in (0, n)]
+    vr = max(1, int(math.ceil((c.via_d - c.w) / 2 / G - 0.01)))
+    for a, b in zip(path, path[1:]):                      # окрестности переходных отверстий
+        if a[0] != b[0]:
+            for dj in range(-vr, vr + 1):
+                for di in range(-vr, vr + 1):
+                    for l in (0, 1):
+                        if g[l, a[1] + dj, a[2] + di] not in (0, n): pts.append((l, a[1] + dj, a[2] + di))
+    for (l, j, i) in pts:
+        v = int(g[l, j, i])
+        if v > 0: out.add(v); continue
+        x, y = i * G, j * G
+        for (ax, ay, bx, by, w, m, layer) in self.segs[self.fix_nseg:]:
+            if layer != l or m == n: continue
+            r = w / 2 + self.pair(c, m) + c.w / 2 + MARGIN
+            if x < min(ax, bx) - r or x > max(ax, bx) + r or y < min(ay, by) - r or y > max(ay, by) + r: continue
+            dx, dy = bx - ax, by - ay; L2 = dx * dx + dy * dy
+            t = max(0.0, min(1.0, ((x - ax) * dx + (y - ay) * dy) / L2)) if L2 > 0 else 0.0
+            if math.hypot(x - (ax + t * dx), y - (ay + t * dy)) <= r: out.add(m)
+        for (vx, vy, d, dr, m) in self.vias[self.fix_nvia:]:
+            if m != n and math.hypot(x - vx, y - vy) <= d / 2 + self.pair(c, m) + c.w / 2 + MARGIN: out.add(m)
+    return out
+
+
+Router.snapshot, Router.rip, Router.probe, Router.blockers = _snapshot, _rip, _probe, _blockers
