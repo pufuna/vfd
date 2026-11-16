@@ -10,3 +10,7 @@ fp-info-cache
 *.lck
 firmware/sim/dump_params
 .pf_state.pkl
+*.dsn
+hardware/pcb/pch1500_routed.kicad_*
+hardware/pcb/pch1500.kicad_*
+*.kicad_prl

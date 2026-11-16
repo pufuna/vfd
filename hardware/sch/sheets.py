@@ -140,10 +140,8 @@ def sheet3():
         s.wire(u[7], (chan[i0], y0 + 10), (chan[i0], pa.y), pa); s.wire(u[6], (chan[i1], y0 + 15), (chan[i1], pb.y), pb)
     for i, pin in enumerate((2, 4, 6, 8, 10, 12)):
         y = dd[pin].y
-        r = s.res(f"R{25 + i}", 340, y, "h"); s.wire(dd[pin], r[1]); s.wire(r[2], (384, y)); s.flag((384, y), "r", net=r[2].net, length=0)
-        c = s.cap(f"C{46 + i}", 362, y + 6, "v", val=(i == 0)); s.wire((362, y), c[1]); s.pwr(c[2], "d", length=1.5)
+        r = s.res(f"R{25 + i}", 340, y, "h"); s.wire(dd[pin], r[1]); s.wire(r[2], (365, y)); s.flag((365, y), "r", net=r[2].net, length=0)
     s.pwr(dd[14], "l"); s.pwr(dd[7], "r")
-    s.text(368, 60, "C46…C51 — 1 нФ", 2.3)
     for ref, x in (("C18", 45), ("C19", 62), ("C20", 79), ("C17", 96)):
         c = s.cap(ref, x, 258, "v"); s.pwr(c[1], "u"); s.pwr(c[2])
     s.text(38, 244, "Развязка питания U1…U3, DD1", 2.6)

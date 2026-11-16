@@ -1,5 +1,0 @@
-(version 1)
-(rule "bootstrap_U" (condition "A.NetName == '/VBU' && B.NetName == '/VSU' || A.NetName == 'VBU' && B.NetName == 'VSU'") (constraint clearance (min 0.4mm)))
-(rule "bootstrap_V" (condition "A.NetName == '/VBV' && B.NetName == '/VSV' || A.NetName == 'VBV' && B.NetName == 'VSV'") (constraint clearance (min 0.4mm)))
-(rule "bootstrap_W" (condition "A.NetName == '/VBW' && B.NetName == '/VSW' || A.NetName == 'VBW' && B.NetName == 'VSW'") (constraint clearance (min 0.4mm)))
-(rule "isolation_barrier" (condition "A.NetClass != B.NetClass && (A.NetName == 'GND' || A.NetName == '+5V' || A.NetName == '+3V3') && (B.NetClass == 'HVPWR' || B.NetClass == 'HVSIG' || B.NetClass == 'LVPWR')") (constraint clearance (min 3.0mm)))
