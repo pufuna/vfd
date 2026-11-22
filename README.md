@@ -26,6 +26,7 @@
 | `docs/netlist.md` | таблица цепей платы |
 | `firmware/stm32` | прошивка контроллера (STM32F411 Black Pill) |
 | `firmware/esp32` | прошивка модуля связи (ESP32) |
+| `firmware/bin` | готовые файлы прошивки STM32 и ESP32 и как их записать без PlatformIO |
 | `firmware/sim` | модель двигателя и тесты (`make test`) |
 | `enclosure/` | корпус 210 × 230 мм: `pch1500_case.scad`; готовые к печати `stl/whole/` (цельный, стол от 235 × 215 мм), `stl/split/` (разрезной, стол 220 × 220 мм), `stl/common/`; `build_stl.sh` — выпуск STL; `check_fit.py` — проверка, что детали платы не задевают корпус, дисплей и кнопки |
 

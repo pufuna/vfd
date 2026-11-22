@@ -38,7 +38,7 @@
 
 ## 4. Прошивка
 
-Нужен [PlatformIO](https://platformio.org) (командная строка или расширение для VS Code).
+Нужен [PlatformIO](https://platformio.org) (командная строка или расширение для VS Code). Без PlatformIO можно записать готовые файлы из `firmware/bin/` — порядок описан в `firmware/bin/README.md`.
 
 **Контроллер (Black Pill):**
 
