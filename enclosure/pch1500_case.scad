@@ -1,4 +1,4 @@
-// ПЧ-1500 — корпус для 3D-печати (OpenSCAD). Все размеры в мм.
+// PUFVFD — корпус для 3D-печати (OpenSCAD). Все размеры в мм.
 // Детали: part = "base" (основание), "lid" (крышка с пультом), "leg" (ножка-проставка, 4 шт.), "all" (сборка для просмотра)
 // Экспорт:  openscad -D 'part="base"' -o stl/base.stl pch1500_case.scad
 part = "all";
@@ -8,7 +8,7 @@ W = 210; H = 200;            // наружные ширина и высота
 wall = 3;
 base_d = 62;                 // внутренняя глубина основания (над задней стенкой)
 lid_d = 22;                  // внутренняя глубина крышки
-pcb_w = 180; pcb_h = 150;    // плата ПЧ1500.01.000
+pcb_w = 180; pcb_h = 150;    // плата PUFVFD.01.000
 pcb_top = 92;                // координата верхнего края платы (от центра корпуса)
 // радиатор 125x150 мм (плоская сторона прилегает к задней стенке снаружи); под ним — модуль DA1 и мост VD1
 hs_w = 125; hs_h = 150;
@@ -80,7 +80,7 @@ module lid() {
             labels = ["ПУСК", "СТОП", "▲", "▼", "ВВОД"];
             for (i = [-2 : 2]) translate([i * btn_pitch - 15, btn_y - 14]) text(labels[i + 2], size = 4.5, halign = "center", font = "DejaVu Sans:style=Bold");
             translate([82, btn_y - 14]) text("Гц", size = 4.5, halign = "center", font = "DejaVu Sans:style=Bold");
-            translate([0, lcd_y + 27]) text("ПЧ-1500   ~220 В → 3~220 В   1,5 кВт", size = 5, halign = "center", font = "DejaVu Sans:style=Bold");
+            translate([0, lcd_y + 27]) text("PUFVFD   ~220 В → 3~220 В   1,5 кВт", size = 5, halign = "center", font = "DejaVu Sans:style=Bold");
             translate([0, -H / 2 + 8]) text("ОПАСНО! После отключения ждать 5 минут", size = 4.2, halign = "center", font = "DejaVu Sans:style=Bold");
         }
     }

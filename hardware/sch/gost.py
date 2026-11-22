@@ -1,4 +1,4 @@
-"""Мини-САПР для оформления схем ПЧ-1500 по ЕСКД (ГОСТ 2.104, 2.701, 2.702, 2.710, 2.721–2.759):
+"""Мини-САПР для оформления схем PUFVFD по ЕСКД (ГОСТ 2.104, 2.701, 2.702, 2.710, 2.721–2.759):
 лист A3 с рамкой и основной надписью, условные графические обозначения, линии связи, обозначения цепей.
 Номиналы и цепи берутся из netlist.py; после отрисовки связность чертежа сверяется с нетлистом (verify)."""
 import html, math, os, sys
@@ -8,7 +8,7 @@ import netlist as N
 
 COMP = {c["ref"]: c for c in N.C}
 FONT = 'font-family="DejaVu Sans,Arial,sans-serif" font-style="italic"'
-DOC = {"code": "ПЧ1500.00.000", "name": "Преобразователь частоты ПЧ-1500", "date": "11.2026"}
+DOC = {"code": "PUFVFD.00.000", "name": "Преобразователь частоты PUFVFD", "date": "11.2026"}
 
 
 def pin_net(ref, num):
@@ -96,7 +96,7 @@ class Sheet:
         self.text(x0 + 142.5, y0 + 19, "Лит.", 2.2, "middle"); self.text(x0 + 158.5, y0 + 19, "Масса", 2.2, "middle"); self.text(x0 + 176, y0 + 19, "Масштаб", 2.2, "middle")
         self.text(x0 + 176, y0 + 29, "—", 3, "middle")
         self.text(x0 + 137, y0 + 39, f"Лист {self.num}", 2.6); self.text(x0 + 157, y0 + 39, f"Листов {self.total}", 2.6)
-        self.text(x0 + 160, y0 + 49, "Проект ПЧ-1500", 3, "middle")
+        self.text(x0 + 160, y0 + 49, "Проект PUFVFD", 3, "middle")
         self.text(25, 12, self.title, 4.2, bold=True)
 
     # ---------- элементы ----------

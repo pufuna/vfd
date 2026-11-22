@@ -1,4 +1,4 @@
-# Таблица параметров ПЧ-1500
+# Таблица параметров PUFVFD
 
 Создано автоматически из `firmware/stm32/lib/core/params.c` (`make docs` в `firmware/sim`).
 

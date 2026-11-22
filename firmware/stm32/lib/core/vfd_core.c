@@ -1,4 +1,4 @@
-/* ПЧ-1500 — ядро управления. См. vfd_core.h */
+/* PUFVFD — ядро управления. См. vfd_core.h */
 #include "vfd_core.h"
 #include <math.h>
 #include <string.h>

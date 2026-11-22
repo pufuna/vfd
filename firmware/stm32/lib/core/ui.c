@@ -147,7 +147,7 @@ void ui_task(void)
     if (rpt_key && (k & rpt_key) && (rpt_key == KEY_UP || rpt_key == KEY_DOWN)) {   /* автоповтор с ускорением */
         if (++rpt_cnt > 50 && (rpt_cnt % 5) == 0) on_key(rpt_key, rpt_cnt);
     } else if (!(k & rpt_key)) {
-        if (rpt_key && rpt_cnt > 50 && scr == SCR_MAIN) app.save_req = 1;   /* сохранить задание после автоповтора */
+        if ((rpt_key == KEY_UP || rpt_key == KEY_DOWN) && scr == SCR_MAIN) app.save_req = 1;   /* сохранить задание после изменения кнопками */
         rpt_key = 0;
     }
     if (++div >= 20) { div = 0; frame_cnt++; draw(); }

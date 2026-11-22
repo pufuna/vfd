@@ -1,11 +1,11 @@
 /*
- * ПЧ-1500 — модуль связи на ESP32.
+ * PUFVFD — модуль связи на ESP32.
  * Работает как ведущий Modbus RTU по UART2 (GPIO16 RX, GPIO17 TX, 115200 8N1) с платой управления (STM32)
  * и предоставляет:
- *   - веб-интерфейс мониторинга и настройки (точка доступа «PCH-1500» и/или домашняя сеть Wi-Fi);
+ *   - веб-интерфейс мониторинга и настройки (точка доступа «PUFVFD» и/или домашняя сеть Wi-Fi);
  *   - JSON API (/api/status, /api/params, /api/write, /api/cmd, /api/wifi);
  *   - шлюз Modbus TCP (порт 502);
- *   - текстовую консоль по Bluetooth (SPP), имя устройства «PCH-1500».
+ *   - текстовую консоль по Bluetooth (SPP), имя устройства «PUFVFD».
  * Привод полностью работоспособен и без этого модуля.
  */
 #include <Arduino.h>
@@ -196,12 +196,12 @@ void setup()
     prefs.begin("pch", false);
     String ssid = prefs.getString("ssid", ""), pass = prefs.getString("pass", ""), appass = prefs.getString("appass", "12345678");
     WiFi.mode(ssid.length() ? WIFI_AP_STA : WIFI_AP);
-    WiFi.softAP("PCH-1500", appass.c_str());
+    WiFi.softAP("PUFVFD", appass.c_str());
     if (ssid.length()) { WiFi.setAutoReconnect(true); WiFi.begin(ssid.c_str(), pass.c_str()); }
     setupHttp();
     mbtcp.begin();
 #if USE_BLUETOOTH
-    bt.begin("PCH-1500");
+    bt.begin("PUFVFD");
 #endif
 }
 

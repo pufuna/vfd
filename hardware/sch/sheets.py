@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ПЧ-1500 — схема электрическая принципиальная (Э3), листы 1–5. Запуск: python3 sheets.py"""
+"""PUFVFD — схема электрическая принципиальная (Э3), листы 1–5. Запуск: python3 sheets.py"""
 import os, sys
 from gost import Sheet, verify, COMP
 

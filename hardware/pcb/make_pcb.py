@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ПЧ-1500 — генерация печатной платы A1 (KiCad 7, pcbnew).
+"""PUFVFD — генерация печатной платы A1 (KiCad 7, pcbnew).
 Этапы:  place  — размещение элементов и контур платы -> pch1500.kicad_pcb, pch1500.dsn
         (внешний шаг) автотрассировка Freerouting: pch1500.dsn -> pch1500.ses
         finish — импорт трасс, полигоны, проверка DRC, отчёт
@@ -206,7 +206,7 @@ def place():
         o = z.Outline(); o.NewOutline()
         for px, py in ((x0, y0), (x1, y0), (x1, y1), (x0, y1)): o.Append(FromMM(px), FromMM(py))
         board.Add(z)
-    text(board, "ПЧ-1500 A1 v1.0", 162, 36.2, 1.2)
+    text(board, "PUFVFD A1 v1.0", 162, 36.2, 1.2)
     text(board, "ОПАСНО 400 В", 52, 147.5, 1.8)
     text(board, "ИЗОЛИРОВАНО", 138, 148.8, 1.0)
     board.GetDesignSettings().SetCopperLayerCount(2)

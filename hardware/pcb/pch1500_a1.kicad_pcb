@@ -14526,7 +14526,7 @@
   (gr_text "ИЗОЛИРОВАНО" (at 138 148.8) (layer "F.SilkS") (tstamp 78d786bf-340b-4f1c-94f3-549a55138556)
     (effects (font (size 1 1) (thickness 0.15)))
   )
-  (gr_text "ПЧ-1500 A1 v1.0" (at 162 36.2) (layer "F.SilkS") (tstamp f4926aa0-d2c2-4511-89c1-a41c9ccce194)
+  (gr_text "PUFVFD A1 v1.0" (at 162 36.2) (layer "F.SilkS") (tstamp f4926aa0-d2c2-4511-89c1-a41c9ccce194)
     (effects (font (size 1.2 1.2) (thickness 0.18)))
   )
 

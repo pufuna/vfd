@@ -1,8 +1,8 @@
-/* Встроенная веб-страница ПЧ-1500 */
+/* Встроенная веб-страница PUFVFD */
 #pragma once
 #include <pgmspace.h>
 static const char WEB_PAGE[] PROGMEM = R"HTML(<!doctype html><html lang="ru"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>ПЧ-1500</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>PUFVFD</title>
 <style>
 :root{--bg:#f4f5f7;--card:#fff;--fg:#1c1f24;--mut:#69707d;--acc:#0b6bcb;--bad:#c62828;--ok:#2e7d32;--line:#dde1e7}
 @media(prefers-color-scheme:dark){:root{--bg:#14171c;--card:#1e2229;--fg:#e8eaee;--mut:#9aa3b2;--acc:#5aa9f5;--bad:#ef6b6b;--ok:#6fcf74;--line:#2f3540}}
@@ -19,7 +19,7 @@ button{cursor:pointer}button.go{background:var(--ok);color:#fff;border:0}button.
 .tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px}td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
 td input,td select{padding:4px 6px;width:120px}small{color:var(--mut)}
 </style></head><body><main>
-<h1>Преобразователь частоты ПЧ-1500 <span id="state">…</span></h1>
+<h1>Преобразователь частоты PUFVFD <span id="state">…</span></h1>
 <div class="card"><div class="grid">
 <div class="tile"><b id="f_out">–</b><span>Выходная частота, Гц</span></div>
 <div class="tile"><b id="f_ref">–</b><span>Задание, Гц</span></div>

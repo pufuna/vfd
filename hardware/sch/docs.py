@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ПЧ-1500 — выпуск комплекта схем по ЕСКД: Э1 (структурная), Э3 (принципиальная, 5 листов), ПЭ3 (перечень элементов),
+"""PUFVFD — выпуск комплекта схем по ЕСКД: Э1 (структурная), Э3 (принципиальная, 5 листов), ПЭ3 (перечень элементов),
 Э4 (соединений); общий PDF. Запуск: python3 docs.py   (для PDF нужен node + playwright)"""
 import os, re, subprocess, sys, collections
 from gost import Sheet, verify, COMP
@@ -57,7 +57,7 @@ def e1():
 
 def e4():
     s = Sheet("Схема электрическая соединений", "Э4", "Схема электрическая\nсоединений", 1, 1)
-    s.rect(150, 28, 130, 206, 0.8); s.text(215, 34, "Плата основная ПЧ1500.01.000", 3.2, "middle", bold=True)
+    s.rect(150, 28, 130, 206, 0.8); s.text(215, 34, "Плата основная PUFVFD.01.000", 3.2, "middle", bold=True)
     s.line(215, 40, 215, 232, 0.4, "6 3"); s.text(183, 231, "барьер изоляции", 2.3)
     def tb(ref, title, x, y, pins, side):
         w = 26; s.rect(x, y, w, 5 * len(pins) + 6, 0.6); s.text(x + w / 2, y + 4.2, f"{ref} {title}", 2.5, "middle", bold=True)
