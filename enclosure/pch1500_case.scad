@@ -4,15 +4,15 @@
 part = "all";
 
 // ---- основные параметры (подгоняются под купленные изделия) ----
-W = 210; H = 200;            // наружные ширина и высота
+W = 210; H = 230;            // наружные ширина и высота (плата 180 × 170 + место для ввода кабелей снизу)
 wall = 3;
 base_d = 62;                 // внутренняя глубина основания (над задней стенкой)
 lid_d = 22;                  // внутренняя глубина крышки
 pcb_w = 180; pcb_h = 170;    // плата PUFVFD.01.000
-pcb_top = 92;                // координата верхнего края платы (от центра корпуса)
+pcb_top = 102;               // координата верхнего края платы (от центра корпуса); снизу остаётся 44 мм для кабелей
 // радиатор 125x150 мм (плоская сторона прилегает к задней стенке снаружи); под ним — модуль DA1 и мост VD1
 hs_w = 125; hs_h = 150;
-hs_x = -33.5; hs_y = 20;     // центр радиатора
+hs_x = -33.5; hs_y = 30;     // центр радиатора
 hs_overlap = 5;              // перекрытие радиатора и стенки по периметру окна
 module_h = 6.0;              // расстояние от радиатора до нижней стороны платы — ИЗМЕРИТЬ ПО УСТАНОВЛЕННОМУ МОДУЛЮ
 post_h = module_h - wall;    // высота стоек платы над внутренней поверхностью стенки
@@ -20,10 +20,11 @@ post_h = module_h - wall;    // высота стоек платы над вну
 pcb_holes = [[4.5, 145.0], [46.0, 146.2], [114.0, 146.6], [176.0, 146.5], [176.0, 34.0], [4.5, 166.5]];   // седьмое (40,5; 35) — стойка М3 в радиатор
 lcd_win = [97.5, 40];        // окно ЖКИ 2004
 lcd_holes = [93, 55];        // крепёжные отверстия модуля ЖКИ
-lcd_y = 45;
-btn_y = -30; btn_pitch = 22; btn_d = 12.6;   // 5 кнопок 12x12 с круглыми колпачками
+lcd_y = 50;
+btn_y = -26; btn_pitch = 22; btn_d = 12.6;   // 5 кнопок 12x12 с круглыми колпачками
 pot_d = 7.4;                 // отверстие потенциометра
 leg_h = 50;                  // высота ножек (радиатор 25 мм + вентилятор 10 мм + зазор)
+engrave = true;              // надписи на крышке (для проверки посадки отключаются — ускоряет расчёт)
 $fn = 40;
 
 iw = W - 2 * wall; ih = H - 2 * wall;
@@ -76,11 +77,12 @@ module lid() {
         translate([82, btn_y, lid_d - 1]) cylinder(d = pot_d, h = wall + 3);
         for (sx = [-1, 1], sy = [-1, 1]) translate([sx * cx, sy * cy, -1]) { cylinder(d = 3.4, h = lid_d + wall + 2); translate([0, 0, lid_d + wall - 1.8 + 1]) cylinder(d1 = 3.4, d2 = 6.8, h = 1.9); }
         // надписи (гравировка 0,6 мм)
-        translate([0, 0, lid_d + wall - 0.6]) linear_extrude(1) {
+        if (engrave) translate([0, 0, lid_d + wall - 0.6]) linear_extrude(1) {
             labels = ["ПУСК", "СТОП", "▲", "▼", "ВВОД"];
             for (i = [-2 : 2]) translate([i * btn_pitch - 15, btn_y - 14]) text(labels[i + 2], size = 4.5, halign = "center", font = "DejaVu Sans:style=Bold");
             translate([82, btn_y - 14]) text("Гц", size = 4.5, halign = "center", font = "DejaVu Sans:style=Bold");
-            translate([0, lcd_y + 27]) text("PUFVFD   ~220 В → 3~220 В   1,5 кВт", size = 5, halign = "center", font = "DejaVu Sans:style=Bold");
+            translate([0, lcd_y + 40]) text("PUFVFD", size = 12, halign = "center", font = "DejaVu Sans:style=Bold");
+            translate([0, lcd_y + 28.5]) text("ПРЕОБРАЗОВАТЕЛЬ ЧАСТОТЫ  1,5 кВт  ~220 В / 3~220 В", size = 4, halign = "center", font = "DejaVu Sans:style=Bold");
             translate([0, -H / 2 + 8]) text("ОПАСНО! После отключения ждать 5 минут", size = 4.2, halign = "center", font = "DejaVu Sans:style=Bold");
         }
     }

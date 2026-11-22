@@ -15,3 +15,4 @@ hardware/pcb/pch1500_routed.kicad_*
 hardware/pcb/pch1500.kicad_*
 *.kicad_prl
 firmware/sim/fuzz
+enclosure/.fit/

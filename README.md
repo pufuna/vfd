@@ -26,7 +26,7 @@
 | `firmware/stm32` | прошивка контроллера (STM32F411 Black Pill) |
 | `firmware/esp32` | прошивка модуля связи (ESP32) |
 | `firmware/sim` | модель двигателя и тесты (`make test`) |
-| `enclosure/` | корпус: `pch1500_case.scad`, готовые `stl/` |
+| `enclosure/` | корпус 210 × 230 мм: `pch1500_case.scad`, готовые `stl/`; `check_fit.py` — проверка, что детали платы не задевают корпус, дисплей и кнопки |
 
 ## Основные решения
 
