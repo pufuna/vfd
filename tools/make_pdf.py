@@ -23,7 +23,7 @@ td,th{border:0.6pt solid #000;padding:2px 5px;vertical-align:top}th{font-weight:
 code{font-family:'Liberation Mono',monospace;font-size:9.5pt}pre{font-size:9pt;margin:4px 0 8px 12.5mm;white-space:pre-wrap}
 blockquote{margin:6px 0;padding:0}strong,b{font-weight:normal}a{color:#000;text-decoration:none}"""
 DOCS = [("06_description", "docs/01_description.md"), ("07_assembly_and_commissioning", "docs/02_assembly.md"),
-        ("09_modbus", "docs/04_modbus.md"), ("10_parameters", "docs/parameters.md"), ("11_bom", "docs/bom.md"), ("12_netlist", "docs/netlist.md")]
+        ("09_modbus", "docs/04_modbus.md"), ("10_parameters", "docs/parameters.md"), ("11_bom", "docs/bom.md"), ("12_netlist", "docs/netlist.md"), ("14_enclosure_printing", "docs/05_printing.md")]
 tmp = os.path.join(PDF, "_tmp"); os.makedirs(tmp, exist_ok=True); args = []
 for name, src in DOCS:
     html = markdown.markdown(open(os.path.join(ROOT, src), encoding="utf-8").read(), extensions=["tables", "fenced_code"])
