@@ -10,6 +10,7 @@ app_t app;
 
 typedef struct { uint32_t magic; int16_t val[P_COUNT]; uint8_t faults[4]; uint32_t run_seconds; uint16_t crc; } store_t;
 #define STORE_MAGIC 0x56464431u   /* "VFD1" */
+_Static_assert(sizeof(store_t) <= 256, "запись параметров не помещается в ячейку флеш-памяти (256 байт)");
 
 static void store_save(void)
 {
@@ -45,11 +46,13 @@ static void apply_cfg(void)
 }
 
 static void apply_comm(void) { hw_uart_cfg(PORT_RS485, mb_bauds[param_val[P_MB_BAUD]], param_val[P_MB_PARITY]); }
+static uint32_t comm_apply_ms;      /* 0 — нет отложенной смены настроек RS-485 */
 
 void app_param_changed(int idx)
 {
-    if (idx == P_FACTORY && param_val[P_FACTORY]) { params_defaults(); apply_comm(); app.save_req = 1; }
-    if (idx == P_MB_BAUD || idx == P_MB_PARITY) apply_comm();
+    if (idx == P_FACTORY && param_val[P_FACTORY]) { params_defaults(); app.save_req = 1; }
+    /* новая скорость/формат RS-485 применяются через 50 мс — после отправки ответа на запрос, который их изменил */
+    if (idx == P_MB_BAUD || idx == P_MB_PARITY || idx == P_FACTORY) comm_apply_ms = (hw_millis() + 50u) | 1u;
     if (idx == P_TUNE) return;
     app.cfg_dirty = 1;
 }
@@ -298,6 +301,7 @@ static void logic_10ms(void)
         app.key_run = 0; app.tw_run = 0; app.stop_latch = 1; app.ctrl_word &= (uint16_t)~1u; app.cfg_dirty = 1; app.save_req = 1;
     }
     if (app.cfg_dirty && !m->pwm_en && m->state != VFD_ST_BOOT) apply_cfg();
+    if (comm_apply_ms && (int32_t)(now - comm_apply_ms) >= 0) { comm_apply_ms = 0; apply_comm(); }
 
     /* вентилятор, реле */
     hw_fan(param_val[P_FAN_MODE] || m->pwm_en || app.temp > 45.0f);

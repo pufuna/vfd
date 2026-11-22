@@ -627,6 +627,10 @@
    },
    {
     "netclass": "HOT",
+    "pattern": "P15D"
+   },
+   {
+    "netclass": "HOT",
     "pattern": "REF06"
    },
    {

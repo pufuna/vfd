@@ -28,7 +28,8 @@ uint8_t hw_di(void) { return di; }
 float hw_ai(void) { return ai; }
 float hw_temp(void) { return temp; }
 void hw_set_cal(float a, float b) { (void)a; (void)b; }
-void hw_uart_cfg(int p, uint32_t b, int par) { (void)p; (void)b; (void)par; }
+static uint32_t uart_baud[2];
+void hw_uart_cfg(int p, uint32_t b, int par) { (void)par; uart_baud[p] = b; }
 int hw_uart_rx_frame(int p, uint8_t *b, int max) { int n = rxlen[p]; (void)max; if (n) { memcpy(b, rxbuf[p], (size_t)n); rxlen[p] = 0; } return n; }
 void hw_uart_tx(int p, const uint8_t *b, int n) { (void)p; memcpy(txbuf, b, (size_t)n); txlen = n; }
 int hw_i2c_write(uint8_t a, const uint8_t *d, int n) { (void)a; (void)d; (void)n; return 0; }
@@ -167,7 +168,15 @@ int main(void)
     wr(P_SKIP_F, 0); wr(P_FREQ_SET, 500); wr(P_SCURVE, 30); wr(P_ACC, 20); press(KEY_RUN);
     float fmx = 0, f1 = 0; for (int i = 0; i < 40; i++) { run_ms(100); if (app.m.f_out > fmx) fmx = app.m.f_out; if (i == 2) f1 = app.m.f_out; }
     CHECK(fabsf(app.m.f_out - 50) < 0.05f && fmx < 50.05f && f1 < 3.0f, "S-рампа: итог %.2f, максимум %.2f, через 0,3 с %.2f Гц", app.m.f_out, fmx, f1);
-    press(KEY_STOP); run_ms(2500); wr(P_SCURVE, 0);
+    /* реверс на ходу при S-рампе: частота должна плавно пройти через ноль и выйти на −30 Гц без выбросов */
+    wr(P_FREQ_SET, -300); float fmin_seen = 100;
+    for (int i = 0; i < 60; i++) { run_ms(100); if (app.m.f_out < fmin_seen) fmin_seen = app.m.f_out; }
+    CHECK(fabsf(app.m.f_out + 30) < 0.05f && fmin_seen > -30.05f, "S-рампа, реверс: итог %.2f, минимум %.2f Гц", app.m.f_out, fmin_seen);
+    press(KEY_STOP); run_ms(2500); wr(P_SCURVE, 0); wr(P_FREQ_SET, 500);
+    /* смена скорости RS-485: ответ уходит на старой скорости, новая применяется позже */
+    { uint32_t b0 = uart_baud[0]; int e = wr(P_MB_BAUD, 0);
+      CHECK(e == 0 && uart_baud[0] == b0 && txlen == 8, "ответ на смену скорости отправлен на прежней скорости");
+      run_ms(80); CHECK(uart_baud[0] == 9600, "новая скорость применена через 50 мс (%u)", (unsigned)uart_baud[0]); wr(P_MB_BAUD, 1); run_ms(80); }
     /* ПИД: модель — давление пропорционально частоте с инерцией; затем «сон» */
     wr(P_PID_MODE, 1); wr(P_PID_SET, 600); wr(P_PID_KP, 100); wr(P_PID_TI, 20); wr(P_PID_FMIN, 100); wr(P_AI_FILT, 0); wr(P_ACC, 10);
     run_ms(50); press(KEY_RUN);

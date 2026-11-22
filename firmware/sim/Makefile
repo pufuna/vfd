@@ -13,3 +13,5 @@ dump_params: dump_params.c $(CORE)/params.c $(CORE)/app.c $(CORE)/ui.c $(CORE)/l
 	$(CC) $(CFLAGS) -o $@ $^ -lm
 docs: dump_params
 	./dump_params > ../../docs/parameters.md
+fuzz: fuzz_modbus.c $(CORE)/modbus.c $(CORE)/params.c $(CORE)/vfd_core.c
+	$(CC) -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -I$(CORE) -o $@ $^ -lm && ./fuzz

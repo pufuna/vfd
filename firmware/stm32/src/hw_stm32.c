@@ -324,9 +324,11 @@ void hw_init(void)
     for (int p = 13; p <= 15; p++) gpio_mode(GPIOB, p, AF, 1, PD, 0);
     gpio_mode(GPIOB, 12, AF, 1, PU, 0);
     /* USART1 PB6/PB7 (AF7), USART2 PA2/PA3 (AF7), I2C1 PB8/PB9 (AF4, открытый сток) */
-    gpio_mode(GPIOB, 6, AF, 7, NOPULL, 0); gpio_mode(GPIOB, 7, AF, 7, PU, 0);
+    /* PB7 (выход MAX485, 5 В), PB8/PB9 (шина I2C с подтяжкой к 5 В на модулях пульта): выводы допускают 5 В
+       только при отключённых внутренних подтягивающих резисторах */
+    gpio_mode(GPIOB, 6, AF, 7, NOPULL, 0); gpio_mode(GPIOB, 7, AF, 7, NOPULL, 0);
     gpio_mode(GPIOA, 2, AF, 7, NOPULL, 0); gpio_mode(GPIOA, 3, AF, 7, PU, 0);
-    gpio_mode(GPIOB, 8, AF, 4, PU, 1); gpio_mode(GPIOB, 9, AF, 4, PU, 1);
+    gpio_mode(GPIOB, 8, AF, 4, NOPULL, 1); gpio_mode(GPIOB, 9, AF, 4, NOPULL, 1);
 
     /* TIM1: центрированный ШИМ, комплементарные выходы, мёртвое время, вход аварии */
     TIM1->CR1 = TIM_CR1_CMS_0 | TIM_CR1_ARPE;
