@@ -18,7 +18,8 @@ static void fmt_val(char *b, int n, int v, int dec)
 {
     static const int p10[4] = {1, 10, 100, 1000};
     int a = v < 0 ? -v : v;
-    if (dec) snprintf(b, (size_t)n, "%s%d.%0*d", v < 0 ? "-" : "", a / p10[dec], dec, a % p10[dec]);
+    dec &= 3;
+    if (dec) snprintf(b, (size_t)n, "%s%d.%0*d", v < 0 ? "-" : "", a / p10[dec], dec, a % p10[dec] % 1000);
     else snprintf(b, (size_t)n, "%d", v);
 }
 
